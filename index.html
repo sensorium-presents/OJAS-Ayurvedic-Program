@@ -546,6 +546,33 @@ body{background:radial-gradient(ellipse 100% 100% at 50% 0%,#0A1A0E 0%,#060D08 6
 }
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var SUPABASE_URL = 'https://kxucvbysrfclcbojemti.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4dWN2YnlzcmZjbGNib2plbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5Mzk2MDgsImV4cCI6MjA5NjUxNTYwOH0.bYp1UfjE_gxeCULdaqTgbhjlxEDMC2eX9WwXXxC0yGU';
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// After quiz completion, save results to Supabase if user is logged in
+function saveResultsIfLoggedIn(primary, secondary, tertiary, pct, answers, intents) {
+  try {
+    supabaseClient.auth.getSession().then(function(s) {
+      if (!s.data.session) return;
+      var uid = s.data.session.user.id;
+      supabaseClient.from('profiles').upsert({
+        id: uid,
+        dosha_primary: primary,
+        dosha_secondary: secondary,
+        dosha_tertiary: tertiary,
+        pitta_pct: pct.p,
+        kapha_pct: pct.k,
+        vata_pct: pct.v,
+        quiz_answers: answers,
+        intent_selections: intents,
+        program_start_date: new Date().toISOString().split('T')[0]
+      });
+    });
+  } catch(e) { console.log('Supabase save skipped:', e); }
+}
+</script>
 </head>
 <body>
 
@@ -1384,6 +1411,15 @@ function calculateResults() {
   document.getElementById('results-section').classList.add('active');
 
   buildResultsPage(primary, secondary, tertiary, pct);
+  // Save to Supabase if logged in
+  if (typeof saveResultsIfLoggedIn === 'function') {
+    saveResultsIfLoggedIn(primary.d, secondary.d, tertiary.d, pct, answers, intents);
+    localStorage.setItem('ojas_quiz_complete', '1');
+    localStorage.setItem('ojas_quiz_results', JSON.stringify({
+      primary: primary.d, secondary: secondary.d, tertiary: tertiary.d,
+      pct: pct, answers: answers, intents: intents
+    }));
+  }
   window.scrollTo(0, 0);
 }
 
