@@ -1,16 +1,14 @@
-# netlify.toml
-# Save this file as: netlify.toml in your GitHub repo root
-
 [build]
   publish = "."
 
+# Explicit page routes - no wildcards that could cause loops
 [[redirects]]
   from = "/dashboard"
   to = "/dashboard.html"
   status = 200
 
 [[redirects]]
-  from = "/login"
+  from = "/login"  
   to = "/login.html"
   status = 200
 
@@ -19,13 +17,7 @@
   to = "/index.html"
   status = 200
 
-# Protect dashboard - redirect to login if not authenticated
-# (actual auth check happens in dashboard.html JS)
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/program"
+  to = "/ojas-program.html"
   status = 200
-  conditions = {Role = ["authenticated"]}
-
-[build.environment]
-  NODE_VERSION = "18"
