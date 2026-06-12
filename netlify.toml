@@ -21,3 +21,6 @@
   from = "/program"
   to = "/ojas-program.html"
   status = 200
+
+[functions]
+  directory = "netlify/functions"
