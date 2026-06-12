@@ -176,6 +176,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   .launch-program{flex-direction:column;}
   .quick-stats{grid-template-columns:repeat(2,1fr);}
 }
+
+.badge-card{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:12px 14px;border:1px solid rgba(75,191,133,.25);
+  background:rgba(61,155,106,.08);cursor:default;min-width:72px;text-align:center;
+}
+.badge-card span{font-size:1.4rem;display:block;}
+.badge-card div{font-size:.52rem;letter-spacing:.1em;color:var(--bloom);text-transform:uppercase;}
+.badge-card.locked{
+  border-color:rgba(255,255,255,.06);background:rgba(255,255,255,.02);
+  filter:grayscale(1);opacity:.4;
+}
+.badge-card.locked div{color:var(--muted);}
 </style>
 </head>
 <body>
@@ -228,6 +241,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
         <div class="prog-label">Program Progress <span id="prog-pct-label">0%</span></div>
         <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
         <div class="prog-days">Day <strong id="current-day">1</strong> of <strong>35</strong></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(75,191,133,.1);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-size:.55rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;">
+              🔥 <span id="streak-count">0</span> day streak</span>
+            <span style="font-size:.55rem;color:var(--pollen);" id="xp-display">0 XP</span>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,.06);overflow:hidden;">
+            <div id="xp-fill" style="height:100%;background:linear-gradient(90deg,var(--pollen),var(--fire));
+              width:0%;transition:width .5s;"></div>
+          </div>
+          <div style="font-size:.52rem;color:var(--muted);margin-top:3px;text-align:right;" id="xp-level">
+            Level 1 — Seedling</div>
+        </div>
       </div>
     </div>
   </div>
@@ -272,6 +298,29 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <div class="pn-text">
         <h4>Auto-Sync Enabled</h4>
         <p>Every checkbox you tick, meal you complete, and journal entry you write is automatically saved to your account. Sign in from any device and your exact progress will be there. Photos and workout screenshots are stored in your private cloud vault.</p>
+      </div>
+    </div>
+
+    <!-- Badges / Achievements -->
+    <div class="section-label">Achievements</div>
+    <div id="badges-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+      <div class="badge-card" id="badge-start" title="Started your practice">
+        <span>🌱</span><div>First Step</div>
+      </div>
+      <div class="badge-card locked" id="badge-streak7" title="7 day streak">
+        <span>🔥</span><div>Week Streak</div>
+      </div>
+      <div class="badge-card locked" id="badge-streak30" title="30 day streak">
+        <span>⚡</span><div>30 Days</div>
+      </div>
+      <div class="badge-card locked" id="badge-journal10" title="10 journal entries">
+        <span>📖</span><div>Chronicler</div>
+      </div>
+      <div class="badge-card locked" id="badge-complete" title="Complete program">
+        <span>🌳</span><div>Full Bloom</div>
+      </div>
+      <div class="badge-card locked" id="badge-photo5" title="5 progress photos">
+        <span>📸</span><div>Witness</div>
       </div>
     </div>
 
@@ -445,6 +494,31 @@ async function loadDashboard(user) {
     document.getElementById('stat-journal').textContent = '—';
     document.getElementById('stat-streak').textContent = '—';
   }
+
+  // Load XP and gamification
+  try {
+    var gamify = await supabaseClient
+      .from('profiles')
+      .select('xp, streak_days, last_active_date')
+      .eq('id', user.id)
+      .single();
+    if (gamify.data) {
+      var xp = gamify.data.xp || 0;
+      var streak = gamify.data.streak_days || 0;
+      document.getElementById('streak-count').textContent = streak;
+      document.getElementById('xp-display').textContent = xp + ' XP';
+      var level = xp < 100 ? 1 : xp < 300 ? 2 : xp < 600 ? 3 : xp < 1000 ? 4 : 5;
+      var levelNames = ['','Seedling','Sprouting','Growing','Blooming','Flourishing'];
+      var nextThreshold = [100,300,600,1000,9999][level-1];
+      var prevThreshold = [0,100,300,600,1000][level-1];
+      var pct = Math.min(100, Math.round(((xp-prevThreshold)/(nextThreshold-prevThreshold))*100));
+      document.getElementById('xp-fill').style.width = pct + '%';
+      document.getElementById('xp-level').textContent = 'Level ' + level + ' — ' + levelNames[level];
+      // Unlock badges
+      if (streak >= 7) document.getElementById('badge-streak7') && document.getElementById('badge-streak7').classList.remove('locked');
+      if (streak >= 30) document.getElementById('badge-streak30') && document.getElementById('badge-streak30').classList.remove('locked');
+    }
+  } catch(e) {}
 
   // Today's task completion from localStorage
   var state = JSON.parse(localStorage.getItem('tridoshic_v4') || '{}');
