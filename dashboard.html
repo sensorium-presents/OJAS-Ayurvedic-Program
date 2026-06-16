@@ -282,14 +282,69 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
 
     <!-- Launch program -->
-    <div class="launch-program">
-      <div class="lp-text">
-        <h3>Continue Your 35-Day Program</h3>
-        <p>Your personalised protocol is ready — day-by-day rituals, meals, herbs, skin routines, and fitness. All your progress is saved.</p>
+    <div id="program-status-block" style="margin-bottom:24px;">
+
+      <!-- STATE A: Setup incomplete — locked -->
+      <div id="program-locked" style="display:none;padding:22px 24px;
+        border:1px solid rgba(255,255,255,.06);background:rgba(10,26,14,.4);">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+              <span style="font-size:1rem;">🔒</span>
+              <h3 style="font-family:'Playfair Display',serif;font-size:1rem;
+                font-weight:400;color:var(--muted);">Build My Program</h3>
+            </div>
+            <p style="font-size:.7rem;color:var(--muted);line-height:1.7;font-weight:300;">
+              Complete your Goals & Focus setup below to unlock your personalized 35-day program.</p>
+          </div>
+          <button onclick="startGoalsSetup()"
+            style="padding:11px 24px;border:1px solid rgba(75,191,133,.25);
+            background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;
+            font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;
+            white-space:nowrap;">Complete Setup →</button>
+        </div>
       </div>
-      <button class="launch-btn" onclick="openProgram()">
-        Open Program →
-      </button>
+
+      <!-- STATE B: Setup complete — ready to build -->
+      <div id="program-unlocked" style="display:none;padding:22px 24px;
+        border:1px solid rgba(75,191,133,.2);
+        background:linear-gradient(135deg,rgba(10,26,14,.9),rgba(20,50,28,.7));">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+              <span style="font-size:1rem;">✦</span>
+              <h3 style="font-family:'Playfair Display',serif;font-size:1rem;
+                font-weight:400;color:var(--cream);">Build My Program</h3>
+            </div>
+            <p style="font-size:.7rem;color:var(--muted);line-height:1.7;font-weight:300;">
+              Your goals are set. Connect your AI to generate your personalized 35-day OJAS protocol.</p>
+          </div>
+          <button onclick="openProgramBuild()"
+            style="padding:12px 28px;background:linear-gradient(135deg,var(--leaf),var(--bloom));
+            color:var(--cream);border:none;font-family:'DM Sans',sans-serif;
+            font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
+            white-space:nowrap;font-weight:500;">Build My Program ✦</button>
+        </div>
+      </div>
+
+      <!-- STATE C: Program active -->
+      <div id="program-active" style="display:none;padding:22px 24px;
+        border:1px solid rgba(75,191,133,.2);
+        background:linear-gradient(135deg,rgba(10,26,14,.9),rgba(20,50,28,.7));">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <h3 style="font-family:'Playfair Display',serif;font-size:1rem;
+              font-weight:400;color:var(--cream);margin-bottom:4px;">Continue Your 35-Day Program</h3>
+            <p style="font-size:.7rem;color:var(--muted);line-height:1.7;font-weight:300;">
+              Day <strong id="active-day-num" style="color:var(--cream);">—</strong> of 35. Progress saved.</p>
+          </div>
+          <button onclick="window.location.href='/ojas-program.html'"
+            style="padding:12px 28px;background:linear-gradient(135deg,var(--leaf),var(--bloom));
+            color:var(--cream);border:none;font-family:'DM Sans',sans-serif;
+            font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
+            white-space:nowrap;font-weight:500;">Open Program →</button>
+        </div>
+      </div>
     </div>
 
     <!-- Program notice about sync -->
@@ -334,40 +389,41 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       </div>
     </div>
 
-    <!-- ══ GOALS & FOCUS — editable, ZenZo-assisted ══ -->
+    <!-- ══ GOALS & FOCUS ══ -->
     <div class="section-label">Goals & Focus</div>
-    <div style="padding:18px;border:1px solid var(--border);background:rgba(10,26,14,.4);margin-bottom:24px;">
-      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;">
-        <div style="font-size:1.4rem;flex-shrink:0;">🌱</div>
-        <div>
-          <h4 style="font-family:'Playfair Display',serif;font-size:.96rem;color:var(--cream);font-weight:400;margin-bottom:4px;">
-            Your program is shaped by what you tell us</h4>
-          <p style="font-size:.71rem;color:var(--muted);line-height:1.7;font-weight:300;">
-            These are the focus areas and goals you selected. Update them anytime — your program adapts as your needs change. Add new focus areas as your practice evolves.
-          </p>
-        </div>
+    <div id="goals-section-wrapper" style="margin-bottom:24px;">
+      <div id="goals-empty-state" style="display:none;padding:20px;
+        border:1px solid rgba(75,191,133,.12);background:rgba(10,26,14,.3);text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:8px;">🌱</div>
+        <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--cream);margin-bottom:6px;">
+          Tell us what you're here to build</div>
+        <div style="font-size:.7rem;color:var(--muted);line-height:1.7;margin-bottom:16px;font-weight:300;
+          max-width:400px;margin-left:auto;margin-right:auto;">
+          Your focus areas, goals, and lifestyle details shape every part of your program — meals, movement, protocols, and depth.</div>
+        <button onclick="startGoalsSetup()"
+          style="padding:11px 28px;background:linear-gradient(135deg,var(--leaf),var(--bloom));
+          color:var(--cream);border:none;font-family:'DM Sans',sans-serif;font-size:.7rem;
+          letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-weight:500;">
+          Set Up My Goals →</button>
       </div>
-
-      <div id="goals-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button onclick="editGoals()" style="padding:10px 20px;border:1px solid rgba(75,191,133,.3);
-          background:rgba(61,155,106,.1);color:var(--bloom);font-size:.66rem;letter-spacing:.15em;
-          text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">
-          ✎ Edit My Goals
-        </button>
-        <button onclick="openZenZo()" style="padding:10px 20px;border:1px solid rgba(237,184,48,.3);
-          background:rgba(237,184,48,.08);color:var(--pollen);font-size:.66rem;letter-spacing:.15em;
-          text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">
-          ✦ Refine with ZenZo
-        </button>
+      <div id="goals-filled-state" style="display:none;">
+        <div id="goals-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="startGoalsSetup()"
+            style="padding:9px 18px;border:1px solid rgba(75,191,133,.3);background:rgba(61,155,106,.1);
+            color:var(--bloom);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;
+            cursor:pointer;font-family:'DM Sans',sans-serif;">✎ Edit Goals</button>
+          <button onclick="openZenZo()"
+            style="padding:9px 18px;border:1px solid rgba(237,184,48,.3);background:rgba(237,184,48,.08);
+            color:var(--pollen);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;
+            cursor:pointer;font-family:'DM Sans',sans-serif;">✦ Refine with ZenZo</button>
+        </div>
       </div>
     </div>
 
-    <!-- ══ ZENZO COMPANION PANEL ══ -->
+    <!-- ZenZo panel -->
     <div id="zenzo-panel" style="display:none;border:1px solid rgba(237,184,48,.2);
-      background:linear-gradient(135deg,rgba(20,50,28,.6),rgba(10,26,14,.8));
-      padding:0;margin-bottom:24px;overflow:hidden;">
+      background:linear-gradient(135deg,rgba(20,50,28,.6),rgba(10,26,14,.8));margin-bottom:24px;overflow:hidden;">
       <div style="padding:16px 20px;border-bottom:1px solid rgba(237,184,48,.15);
         display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -382,53 +438,61 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
         <button onclick="closeZenZo()" style="background:none;border:none;color:var(--muted);
           font-size:.9rem;cursor:pointer;">✕</button>
       </div>
-
       <div style="padding:16px 20px;">
         <div style="padding:12px 14px;background:rgba(237,184,48,.06);border-left:3px solid var(--pollen);
           margin-bottom:14px;font-size:.68rem;color:var(--muted);line-height:1.75;">
-          <strong style="color:var(--cream);">Important:</strong> ZenZo shares Ayurvedic perspectives drawn from
-          traditional texts and published wellness research. It does not diagnose, treat, or replace medical care.
-          For any symptom, condition, medication interaction, or persistent health concern, please consult a
-          licensed physician. ZenZo will always say so when something is outside its scope.
+          <strong style="color:var(--cream);">Note:</strong> ZenZo shares Ayurvedic perspectives and
+          general wellness research. It does not diagnose, treat, or replace medical care.
+          Consult a physician for symptoms, conditions, or medication questions.
         </div>
-
-        <div id="zenzo-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;
-          max-height:320px;overflow-y:auto;"></div>
-
+        <div id="zenzo-messages" style="display:flex;flex-direction:column;gap:10px;
+          margin-bottom:14px;max-height:320px;overflow-y:auto;"></div>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="zenzo-input" placeholder="Ask ZenZo about refining your program..."
-            style="flex:1;padding:11px 14px;background:rgba(6,13,8,.7);border:1px solid rgba(237,184,48,.18);
-            color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;"
+          <input type="text" id="zenzo-input" placeholder="Ask ZenZo about your program..."
+            style="flex:1;padding:11px 14px;background:rgba(6,13,8,.7);
+            border:1px solid rgba(237,184,48,.18);color:var(--cream);
+            font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;"
             onkeydown="if(event.key==='Enter')sendZenZoMessage()">
-          <button onclick="sendZenZoMessage()" style="padding:11px 22px;
-            background:linear-gradient(135deg,var(--pollen),var(--fire));color:var(--root);
-            border:none;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+          <button onclick="sendZenZoMessage()"
+            style="padding:11px 22px;background:linear-gradient(135deg,var(--pollen),var(--fire));
+            color:var(--root);border:none;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
             cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">Send</button>
         </div>
       </div>
     </div>
 
-    <!-- ══ EDIT GOALS MODAL ══ -->
-    <div id="goals-modal" style="display:none;position:fixed;inset:0;z-index:99999;
-      background:rgba(0,0,0,.85);align-items:center;justify-content:center;overflow-y:auto;padding:20px;">
-      <div style="background:#0D1F10;border:1px solid rgba(75,191,133,.25);padding:28px;
-        max-width:560px;width:100%;max-height:85vh;overflow-y:auto;">
-        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);
-          margin-bottom:6px;">Edit Your Goals & Focus</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-bottom:18px;line-height:1.6;">
-          Add or remove focus areas, and update your answers as your needs change. Your program will adjust accordingly.
+    <!-- Goals Setup Modal — 4 steps -->
+    <div id="goals-setup-modal" style="display:none;position:fixed;inset:0;z-index:99999;
+      background:rgba(0,0,0,.92);align-items:flex-start;justify-content:center;
+      overflow-y:auto;padding:20px;">
+      <div style="background:#0D1F10;border:1px solid rgba(75,191,133,.25);
+        width:100%;max-width:600px;margin:20px auto;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(75,191,133,.12);
+          display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:.55rem;letter-spacing:.25em;color:var(--bloom);
+              text-transform:uppercase;margin-bottom:3px;" id="setup-step-label">Step 1 of 4</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;
+              color:var(--cream);" id="setup-step-title">Focus Areas</div>
+          </div>
+          <button onclick="closeGoalsSetup()"
+            style="background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:4px;">✕</button>
         </div>
-        <div id="modal-intent-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-          gap:8px;margin-bottom:18px;"></div>
-        <div id="modal-followups"></div>
-        <div style="display:flex;gap:8px;margin-top:18px;">
-          <button onclick="saveGoalsEdit()" style="flex:1;padding:12px;
-            background:linear-gradient(135deg,var(--leaf),var(--bloom));color:var(--cream);
-            border:none;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;
-            cursor:pointer;font-family:'DM Sans',sans-serif;">Save Changes</button>
-          <button onclick="closeGoalsModal()" style="padding:12px 20px;border:1px solid rgba(75,191,133,.2);
-            background:transparent;color:var(--muted);font-size:.68rem;cursor:pointer;
-            font-family:'DM Sans',sans-serif;">Cancel</button>
+        <div style="height:2px;background:rgba(75,191,133,.1);">
+          <div id="setup-progress-bar" style="height:100%;background:var(--bloom);transition:width .3s;width:25%;"></div>
+        </div>
+        <div id="setup-step-content" style="padding:24px;max-height:62vh;overflow-y:auto;"></div>
+        <div style="padding:16px 24px;border-top:1px solid rgba(75,191,133,.1);
+          display:flex;align-items:center;justify-content:space-between;">
+          <button id="setup-back-btn" onclick="setupStepBack()"
+            style="padding:9px 20px;border:1px solid rgba(75,191,133,.18);background:transparent;
+            color:var(--muted);font-size:.65rem;letter-spacing:.12em;cursor:pointer;
+            font-family:'DM Sans',sans-serif;display:none;">← Back</button>
+          <div style="flex:1;"></div>
+          <button id="setup-next-btn" onclick="setupStepNext()"
+            style="padding:10px 28px;background:linear-gradient(135deg,var(--leaf),var(--bloom));
+            color:var(--cream);border:none;font-family:'DM Sans',sans-serif;font-size:.68rem;
+            letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-weight:500;">Continue →</button>
         </div>
       </div>
     </div>
@@ -753,16 +817,30 @@ async function signOut() {
 // ══════════════════════════════════════════════════════════════
 // GOALS & FOCUS — render, edit, save
 // ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// GOALS & FOCUS — multi-step setup system
+// Step 1: Focus areas (12 intents)
+// Step 2: Per-intent depth questions
+// Step 3: Physical setup
+// Step 4: Lifestyle context
+// ══════════════════════════════════════════════════════════════
+
+var currentUserProfile = null;
+var setupStep = 1;
+var editingPhysical = {};
+var editingLifestyle = {};
 var followupData = {
-  nutrition: {icon:'🍽️', label:'Nutrition & Meals', question:"What's your biggest challenge or goal with food right now?",
+  nutrition: {icon:'🍽️', label:'Nutrition & Meals',
+    question:"What's your biggest challenge or goal with food right now?",
     options:[
-      {val:'structure', text:'I need structure — meal timing, what to eat when, removing decision fatigue'},
-      {val:'weight', text:'Weight management — gaining, losing, or recomposition aligned with my dosha'},
-      {val:'digestive', text:'Digestive symptoms — bloating, irregularity, food sensitivities I want to address'},
-      {val:'energy', text:'Sustained energy — avoiding crashes, eating for stable focus throughout the day'},
-      {val:'restriction', text:'Working within restrictions — allergies, intolerances, or an existing diet'}
+      {val:'structure', text:'I need structure — meal timing, what to eat, removing decision fatigue'},
+      {val:'weight', text:'Weight management — gaining, losing, or recomposition for my dosha'},
+      {val:'digestive', text:'Digestive symptoms — bloating, irregularity, food sensitivities'},
+      {val:'energy', text:'Sustained energy — avoiding crashes, eating for stable focus'},
+      {val:'restriction', text:'Working within restrictions — allergies, intolerances, existing diet'}
     ]},
-  fitness: {icon:'💪', label:'Fitness & Movement', question:'What does your current relationship with exercise look like?',
+  fitness: {icon:'💪', label:'Fitness & Movement',
+    question:'What does your current relationship with exercise look like?',
     options:[
       {val:'beginner', text:'Starting fresh — simple, sustainable movement without overwhelm'},
       {val:'rebuilding', text:'Rebuilding — returning after injury, illness, or a long break'},
@@ -770,7 +848,8 @@ var followupData = {
       {val:'recomp', text:'Body composition — building muscle, losing fat, or both'},
       {val:'mobility', text:'Mobility & longevity — moving well for life, not performance'}
     ]},
-  skin: {icon:'✨', label:'Skin Health', question:"What's the primary skin concern for this program?",
+  skin: {icon:'✨', label:'Skin Health',
+    question:"What's the primary skin concern for this program?",
     options:[
       {val:'acne', text:'Active breakouts — face, back, or body acne I want to clear'},
       {val:'aging', text:'Aging & texture — fine lines, elasticity, dullness'},
@@ -778,7 +857,8 @@ var followupData = {
       {val:'sensitivity', text:'Sensitivity & redness — reactive skin, irritation'},
       {val:'maintenance', text:'Maintenance — simple dosha-aligned routine'}
     ]},
-  hair: {icon:'💆', label:'Hair Care', question:"What's your main hair or scalp concern?",
+  hair: {icon:'💆', label:'Hair Care',
+    question:"What's your main hair or scalp concern?",
     options:[
       {val:'loss', text:'Hair loss or thinning — including specific areas'},
       {val:'texture', text:'Texture & frizz — managing dryness or damage'},
@@ -786,39 +866,44 @@ var followupData = {
       {val:'growth', text:'Growth & length — healthy growth, less breakage'},
       {val:'maintenance', text:'General maintenance — simple dosha-aligned routine'}
     ]},
-  supplements: {icon:'🌿', label:'Herbs & Supplements', question:'How do you want to approach herbs and supplements?',
+  supplements: {icon:'🌿', label:'Herbs & Supplements',
+    question:'How do you want to approach herbs and supplements?',
     options:[
-      {val:'minimal', text:'Minimal & foundational — just the core 2-3 essentials'},
-      {val:'comprehensive', text:'Comprehensive stack — full daily protocol with rationale'},
+      {val:'minimal', text:'Minimal — just the core 2-3 essentials for my dosha'},
+      {val:'comprehensive', text:'Comprehensive — full daily protocol with timing and rationale'},
       {val:'specific', text:'Targeting something specific — a condition or goal'},
       {val:'caution', text:"Cautious — I'm on medication, keep recommendations conservative"},
-      {val:'existing', text:'I already take supplements — help me refine my stack'}
+      {val:'existing', text:"I already take supplements — help me refine what I'm using"}
     ]},
-  sleep: {icon:'🌙', label:'Sleep & Recovery', question:"What's your biggest sleep challenge?",
+  sleep: {icon:'🌙', label:'Sleep & Recovery',
+    question:"What's your biggest sleep challenge?",
     options:[
       {val:'falling', text:'Falling asleep — racing mind, feeling wired at bedtime'},
       {val:'staying', text:'Staying asleep — waking during the night'},
       {val:'waking', text:"Waking unrefreshed — enough hours but don't feel rested"},
-      {val:'schedule', text:'Inconsistent schedule — want more rhythm'},
+      {val:'schedule', text:'Inconsistent schedule — want more rhythm and predictability'},
       {val:'optimising', text:'Generally fine — want to optimise further'}
     ]},
-  stress: {icon:'🧘', label:'Stress & Mind', question:'What would be most valuable for your mental wellbeing right now?',
+  stress: {icon:'🧘', label:'Stress & Mind',
+    question:'What would be most valuable for your mental wellbeing right now?',
     options:[
       {val:'anxiety', text:'Managing anxiety or racing thoughts'},
       {val:'anger', text:'Managing frustration or irritability'},
-      {val:'motivation', text:'Building motivation — overcoming inertia'},
-      {val:'focus', text:'Improving focus & clarity'},
-      {val:'practice', text:'Building a consistent meditation/breathwork practice'}
+      {val:'motivation', text:'Building motivation — overcoming inertia or low drive'},
+      {val:'focus', text:'Improving focus & clarity — reducing mental fog'},
+      {val:'practice', text:'Building a consistent meditation or breathwork practice'}
     ]},
-  digestion: {icon:'🔥', label:'Digestion & Gut', question:'What digestive pattern do you experience most often?',
+  digestion: {icon:'🔥', label:'Digestion & Gut',
+    question:'What digestive pattern do you experience most often?',
     options:[
       {val:'irregular', text:'Irregularity — unpredictable bowel movements, gas, bloating'},
       {val:'acidity', text:'Acidity & heat — heartburn, reflux'},
       {val:'sluggish', text:'Sluggishness — heaviness after eating, low appetite'},
-      {val:'sensitivity', text:'Food sensitivities — specific foods cause issues'},
-      {val:'cleanse', text:'I want a structured reset — guided cleanse'}
+      {val:'sensitivity', text:'Food sensitivities — specific foods consistently cause issues'},
+      {val:'cleanse', text:'I want a structured reset — guided cleanse protocol'}
     ]},
-  oral: {icon:'😁', label:'Oral Health', question:"What's your primary oral health focus?",
+  oral: {icon:'😁', label:'Oral Health',
+    question:"What's your primary oral health focus?",
     options:[
       {val:'gums', text:'Gum health — sensitivity, bleeding, recession'},
       {val:'routine', text:'Building a routine — oil pulling, tongue scraping from scratch'},
@@ -826,7 +911,8 @@ var followupData = {
       {val:'whitening', text:'Whitening & aesthetics — natural approaches'},
       {val:'maintenance', text:'Maintenance — dosha-aligned daily ritual'}
     ]},
-  energy: {icon:'⚡', label:'Energy & Vitality', question:'How would you describe your energy challenges?',
+  energy: {icon:'⚡', label:'Energy & Vitality',
+    question:'How would you describe your energy challenges?',
     options:[
       {val:'crashes', text:'Crashes — energy then hit a wall, especially afternoon'},
       {val:'morning', text:'Morning sluggishness — hard to get going'},
@@ -834,15 +920,17 @@ var followupData = {
       {val:'chronic', text:'Chronic fatigue — persistent low energy'},
       {val:'performance', text:'Performance — feel good, want to optimise further'}
     ]},
-  relationships: {icon:'🤝', label:'Relationships & Work', question:'Where would understanding your dosha be most useful?',
+  relationships: {icon:'🤝', label:'Relationships & Work',
+    question:'Where would understanding your dosha be most useful?',
     options:[
       {val:'conflict', text:'Conflict patterns — how I react under tension'},
       {val:'communication', text:'Communication style — adapting how I express myself'},
       {val:'boundaries', text:'Boundaries — overcommitting, struggling to say no'},
-      {val:'career', text:'Career alignment — what work environments suit me'},
+      {val:'career', text:'Career alignment — what work environments suit my constitution'},
       {val:'general', text:'General self-understanding — curious how this applies'}
     ]},
-  cleanse: {icon:'🫧', label:'Cleanse & Detox', question:'What\'s your experience level with cleansing?',
+  cleanse: {icon:'🫧', label:'Cleanse & Detox',
+    question:"What's your experience level with cleansing?",
     options:[
       {val:'new', text:"New to this — want to understand what's involved"},
       {val:'seasonal', text:'Interested in seasonal rhythm — Ayurvedic calendar'},
@@ -852,87 +940,27 @@ var followupData = {
     ]}
 };
 
-var currentGoalProfile = {};
-var currentIntents = [];
-var currentUserProfile = null;
+// ── STEP RENDERERS ──
 
-function renderGoalsList() {
-  var listEl = document.getElementById('goals-list');
-  if (!listEl) return;
-
-  if (currentIntents.length === 0) {
-    listEl.innerHTML = '<div style="font-size:.72rem;color:var(--muted);font-style:italic;">' +
-      'No focus areas selected yet. Click "Edit My Goals" to choose what your program should prioritise.</div>';
-    return;
-  }
-
-  var html = '';
-  currentIntents.forEach(function(key) {
-    var fu = followupData[key];
-    if (!fu) return;
-    var answer = currentGoalProfile[key];
-    var answerText = '';
-    if (answer) {
-      var opt = fu.options.find(function(o){ return o.val === answer; });
-      answerText = opt ? opt.text : '';
-    }
-    html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;' +
-            'border:1px solid rgba(75,191,133,.12);background:rgba(61,155,106,.04);">';
-    html += '<span style="font-size:1rem;flex-shrink:0;">' + fu.icon + '</span>';
-    html += '<div style="flex:1;">';
-    html += '<div style="font-size:.74rem;color:var(--cream);font-weight:500;margin-bottom:2px;">' + fu.label + '</div>';
-    html += '<div style="font-size:.66rem;color:var(--muted);line-height:1.6;">' +
-            (answerText || '<em>No specific answer yet — click Edit to add detail</em>') + '</div>';
-    html += '</div></div>';
-  });
-
-  listEl.innerHTML = html;
-}
-
-// ══════════════════════════════════════════════════════════════
-// EDIT GOALS MODAL
-// ══════════════════════════════════════════════════════════════
-var allIntentDefs = [
-  {key:'nutrition', icon:'🍽️', label:'Nutrition & Meals'},
-  {key:'fitness', icon:'💪', label:'Fitness & Movement'},
-  {key:'skin', icon:'✨', label:'Skin Health'},
-  {key:'hair', icon:'💆', label:'Hair Care'},
-  {key:'supplements', icon:'🌿', label:'Herbs & Supplements'},
-  {key:'sleep', icon:'🌙', label:'Sleep & Recovery'},
-  {key:'stress', icon:'🧘', label:'Stress & Mind'},
-  {key:'digestion', icon:'🔥', label:'Digestion & Gut'},
-  {key:'oral', icon:'😁', label:'Oral Health'},
-  {key:'energy', icon:'⚡', label:'Energy & Vitality'},
-  {key:'relationships', icon:'🤝', label:'Relationships & Work'},
-  {key:'cleanse', icon:'🫧', label:'Cleanse & Detox'}
-];
-
-var editingIntents = [];
-var editingGoalProfile = {};
-
-function editGoals() {
-  editingIntents = currentIntents.slice();
-  editingGoalProfile = Object.assign({}, currentGoalProfile);
-
-  var grid = document.getElementById('modal-intent-grid');
-  var html = '';
+function renderStep1() {
+  var html = '<p style="font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:18px;font-weight:300;">' +
+    'Select every area of your life you want this program to address. You can change these anytime.</p>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;">';
   allIntentDefs.forEach(function(d) {
     var sel = editingIntents.indexOf(d.key) > -1;
-    html += '<div data-key="' + d.key + '" onclick="toggleEditIntent(this)" style="' +
-      'padding:12px;border:1px solid ' + (sel ? 'var(--bloom)' : 'rgba(75,191,133,.15)') + ';' +
+    html += '<div data-key="' + d.key + '" onclick="toggleSetupIntent(this)" style="' +
+      'padding:12px 10px;border:1px solid ' + (sel ? 'var(--bloom)' : 'rgba(75,191,133,.15)') + ';' +
       'background:' + (sel ? 'rgba(61,155,106,.12)' : 'rgba(10,26,14,.5)') + ';' +
-      'cursor:pointer;text-align:center;transition:all .15s;">';
-    html += '<div style="font-size:1.2rem;margin-bottom:4px;">' + d.icon + '</div>';
-    html += '<div style="font-size:.6rem;color:var(--cream);">' + d.label + '</div>';
-    html += '</div>';
+      'cursor:pointer;text-align:center;transition:all .15s;">' +
+      '<div style="font-size:1.3rem;margin-bottom:5px;">' + d.icon + '</div>' +
+      '<div style="font-size:.62rem;color:var(--cream);line-height:1.3;">' + d.label + '</div>' +
+      '</div>';
   });
-  grid.innerHTML = html;
-
-  renderModalFollowups();
-  document.getElementById('goals-modal').style.display = 'flex';
+  html += '</div>';
+  document.getElementById('setup-step-content').innerHTML = html;
 }
 
-function toggleEditIntent(el) {
+function toggleSetupIntent(el) {
   var key = el.dataset.key;
   var idx = editingIntents.indexOf(key);
   if (idx > -1) {
@@ -944,287 +972,406 @@ function toggleEditIntent(el) {
     el.style.borderColor = 'var(--bloom)';
     el.style.background = 'rgba(61,155,106,.12)';
   }
-  renderModalFollowups();
 }
 
-function renderModalFollowups() {
-  var container = document.getElementById('modal-followups');
-  var html = '';
+function renderStep2() {
+  if (editingIntents.length === 0) {
+    document.getElementById('setup-step-content').innerHTML =
+      '<p style="font-size:.75rem;color:var(--muted);text-align:center;padding:20px;">No focus areas selected — go back and choose at least one.</p>';
+    return;
+  }
+  var html = '<p style="font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:18px;font-weight:300;">' +
+    'For each area you selected, tell us more. Select all that apply and add any personal context.</p>';
   editingIntents.forEach(function(key) {
     var fu = followupData[key];
     if (!fu) return;
-    html += '<div style="margin-top:14px;padding:14px;border:1px solid rgba(75,191,133,.12);background:rgba(10,26,14,.4);">';
-    html += '<div style="font-size:.6rem;letter-spacing:.12em;color:var(--bloom);text-transform:uppercase;margin-bottom:8px;">' +
-            fu.icon + ' ' + fu.label + '</div>';
-    html += '<div style="font-size:.74rem;color:var(--cream);margin-bottom:10px;">' + fu.question + '</div>';
+    var entry = editingGoalProfile[key] || {selected: [], note: ''};
+    if (!entry.selected) entry.selected = [];
+    html += '<div style="margin-bottom:18px;padding:16px;border:1px solid rgba(75,191,133,.12);background:rgba(10,26,14,.4);">';
+    html += '<div style="font-size:.6rem;letter-spacing:.12em;color:var(--bloom);text-transform:uppercase;margin-bottom:6px;">' + fu.icon + ' ' + fu.label + '</div>';
+    html += '<div style="font-size:.76rem;color:var(--cream);margin-bottom:8px;">' + fu.question + '</div>';
+    html += '<div style="font-size:.58rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Select all that apply</div>';
     fu.options.forEach(function(opt) {
-      var sel = editingGoalProfile[key] === opt.val;
-      html += '<div onclick="selectModalGoal(\'' + key + '\',\'' + opt.val + '\',this)" style="' +
-        'padding:9px 12px;margin-bottom:5px;border:1px solid ' + (sel ? 'var(--bloom)' : 'rgba(75,191,133,.12)') + ';' +
+      var sel = entry.selected.indexOf(opt.val) > -1;
+      html += '<div onclick="toggleSetupGoalOpt(\'' + key + '\',\'' + opt.val + '\',this)" style="' +
+        'padding:9px 12px;margin-bottom:5px;border:1px solid ' + (sel ? 'var(--bloom)' : 'rgba(75,191,133,.1)') + ';' +
         'background:' + (sel ? 'rgba(61,155,106,.1)' : 'transparent') + ';' +
-        'font-size:.68rem;color:' + (sel ? 'var(--cream)' : 'var(--muted)') + ';cursor:pointer;line-height:1.5;">' +
-        opt.text + '</div>';
+        'font-size:.7rem;color:' + (sel ? 'var(--cream)' : 'var(--muted)') + ';cursor:pointer;' +
+        'display:flex;align-items:flex-start;gap:8px;line-height:1.5;">' +
+        '<span style="flex-shrink:0;margin-top:1px;">' + (sel ? '☑' : '☐') + '</span>' +
+        '<span>' + opt.text + '</span></div>';
     });
-    html += '</div>';
+    html += '<div style="margin-top:10px;">';
+    html += '<label style="font-size:.58rem;letter-spacing:.1em;color:var(--bloom);text-transform:uppercase;display:block;margin-bottom:5px;">Add personal context (optional)</label>';
+    html += '<textarea data-intent-note="' + key + '" onchange="updateSetupNote(this)" ' +
+      'placeholder="Personal details, history, or specifics that would help shape this part of your program..." ' +
+      'style="width:100%;min-height:50px;padding:8px 10px;background:rgba(6,13,8,.7);' +
+      'border:1px solid rgba(75,191,133,.15);color:var(--cream);font-family:DM Sans,sans-serif;' +
+      'font-size:.7rem;outline:none;resize:vertical;line-height:1.5;">' +
+      (entry.note || '') + '</textarea>';
+    html += '</div></div>';
   });
-  container.innerHTML = html;
+  document.getElementById('setup-step-content').innerHTML = html;
 }
 
-function selectModalGoal(key, val, el) {
-  editingGoalProfile[key] = val;
-  renderModalFollowups();
+function toggleSetupGoalOpt(key, val, el) {
+  if (!editingGoalProfile[key]) editingGoalProfile[key] = {selected: [], note: ''};
+  if (!editingGoalProfile[key].selected) editingGoalProfile[key].selected = [];
+  var idx = editingGoalProfile[key].selected.indexOf(val);
+  var checkEl = el.querySelector('span:first-child');
+  if (idx > -1) {
+    editingGoalProfile[key].selected.splice(idx, 1);
+    el.style.borderColor = 'rgba(75,191,133,.1)';
+    el.style.background = 'transparent';
+    el.style.color = 'var(--muted)';
+    if (checkEl) checkEl.textContent = '☐';
+  } else {
+    editingGoalProfile[key].selected.push(val);
+    el.style.borderColor = 'var(--bloom)';
+    el.style.background = 'rgba(61,155,106,.1)';
+    el.style.color = 'var(--cream)';
+    if (checkEl) checkEl.textContent = '☑';
+  }
 }
 
-async function saveGoalsEdit() {
+function updateSetupNote(el) {
+  var key = el.dataset.intentNote;
+  if (!editingGoalProfile[key]) editingGoalProfile[key] = {selected: [], note: ''};
+  editingGoalProfile[key].note = el.value;
+}
+
+function renderStep3() {
+  var p = editingPhysical;
+  var html = '<p style="font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:18px;font-weight:300;">' +
+    'Physical context helps calibrate your meal portions, workout intensity, and supplement timing.</p>';
+
+  html += field('Fitness Goal', 'p-fitness', 'select', [
+    {v:'',t:'Select your primary goal...'},
+    {v:'muscle_mass',t:'Build muscle mass'},
+    {v:'weight_loss',t:'Lose body fat'},
+    {v:'endurance',t:'Build endurance / cardio fitness'},
+    {v:'strength',t:'Build strength'},
+    {v:'bulk_cut',t:'Bulk / Cut cycle (bodybuilding)'},
+    {v:'maintenance',t:'Maintain current physique'},
+    {v:'general',t:'General health & wellbeing'}
+  ], p.fitnessGoal || '');
+
+  html += field('Current Activity Level', 'p-activity', 'select', [
+    {v:'',t:'How active are you currently?'},
+    {v:'sedentary',t:'Sedentary — little to no regular exercise'},
+    {v:'light',t:'Light — 1-2 days/week of movement'},
+    {v:'moderate',t:'Moderate — 3-4 days/week'},
+    {v:'active',t:'Active — 5+ days/week'},
+    {v:'athletic',t:'Athletic — daily training, competitive sport'}
+  ], p.activityLevel || '');
+
+  html += field('Dietary Framework', 'p-diet', 'select', [
+    {v:'',t:'How do you eat?'},
+    {v:'omnivore',t:'Omnivore — eat everything'},
+    {v:'vegetarian',t:'Vegetarian — no meat'},
+    {v:'vegan',t:'Vegan — no animal products'},
+    {v:'pescatarian',t:'Pescatarian — fish but no meat'},
+    {v:'gluten_free',t:'Gluten-free'},
+    {v:'dairy_free',t:'Dairy-free'},
+    {v:'keto',t:'Keto / low-carb'},
+    {v:'other',t:'Other (add detail below)'}
+  ], p.dietaryFramework || '');
+
+  html += textField('Food allergies or restrictions', 'p-allergies',
+    'Any specific allergies, intolerances, or foods to avoid...', p.allergies || '');
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+  html += textField('Current weight (optional)', 'p-weight', 'e.g. 175 lbs or 79 kg', p.currentWeight || '');
+  html += textField('Weight goal (optional)', 'p-weight-goal', 'e.g. 165 lbs or maintain', p.weightGoal || '');
+  html += '</div>';
+
+  document.getElementById('setup-step-content').innerHTML = html;
+}
+
+function renderStep4() {
+  var l = editingLifestyle;
+  var html = '<p style="font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:18px;font-weight:300;">' +
+    'These details shape your daily rhythm — when you eat, your morning ritual timing, and how your program fits your real life.</p>';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+  html += textField('Typical wake time', 'l-wake', 'e.g. 6:30 AM', l.wakeTime || '');
+  html += textField('Typical sleep time', 'l-sleep', 'e.g. 10:30 PM', l.sleepTime || '');
+  html += '</div>';
+
+  html += field('Cooking Access', 'l-cooking', 'select', [
+    {v:'',t:'How do you typically prepare food?'},
+    {v:'full',t:'Full kitchen — I cook most meals'},
+    {v:'limited',t:'Limited kitchen — simple prep only'},
+    {v:'travel',t:'Travel often — need portable options'},
+    {v:'simple',t:'Prefer simple — minimal ingredients, fast prep'}
+  ], l.cookingAccess || '');
+
+  html += '<div style="margin-bottom:14px;">';
+  html += '<label style="font-size:.6rem;letter-spacing:.12em;color:var(--bloom);text-transform:uppercase;display:block;margin-bottom:8px;">Evening Wind-Down Preferences <span style="color:var(--muted);text-transform:none;letter-spacing:normal;">(select all that apply)</span></label>';
+  var eveningOpts = [
+    {v:'read',t:'📖 Reading'}, {v:'write',t:'✍️ Journaling'},
+    {v:'meditate',t:'🧘 Meditation'}, {v:'breathwork',t:'🌬️ Breathwork'},
+    {v:'gentle_movement',t:'🌿 Gentle movement'}, {v:'music',t:'🎵 Music'},
+    {v:'bath',t:'🛁 Bath/shower ritual'}, {v:'no_preference',t:'No preference'}
+  ];
+  html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  eveningOpts.forEach(function(o) {
+    var sel = (l.eveningPreferences || []).indexOf(o.v) > -1;
+    html += '<div onclick="toggleEveningPref(\'' + o.v + '\',this)" data-val="' + o.v + '" style="' +
+      'padding:7px 12px;border:1px solid ' + (sel ? 'var(--bloom)' : 'rgba(75,191,133,.15)') + ';' +
+      'background:' + (sel ? 'rgba(61,155,106,.1)' : 'transparent') + ';' +
+      'font-size:.67rem;color:' + (sel ? 'var(--cream)' : 'var(--muted)') + ';' +
+      'cursor:pointer;transition:all .15s;">' + o.t + '</div>';
+  });
+  html += '</div></div>';
+
+  html += textField('Your intention for this program', 'l-intention',
+    'What do you most want to feel, achieve, or become through this 35 days?',
+    l.intention || '', 3);
+
+  html += '<div style="padding:14px;border:1px solid rgba(75,191,133,.12);' +
+    'background:rgba(10,26,14,.4);margin-top:4px;">' +
+    '<div style="font-size:.72rem;color:var(--cream);font-weight:500;margin-bottom:4px;">✓ You are ready</div>' +
+    '<div style="font-size:.68rem;color:var(--muted);line-height:1.7;">' +
+    'Once you save, your Goals & Focus will unlock the <strong style="color:var(--cream);">Build My Program</strong> button. ' +
+    'From there you will connect your AI to generate your personalized 35-day OJAS protocol.</div></div>';
+
+  document.getElementById('setup-step-content').innerHTML = html;
+}
+
+function toggleEveningPref(val, el) {
+  if (!editingLifestyle.eveningPreferences) editingLifestyle.eveningPreferences = [];
+  var idx = editingLifestyle.eveningPreferences.indexOf(val);
+  if (idx > -1) {
+    editingLifestyle.eveningPreferences.splice(idx, 1);
+    el.style.borderColor = 'rgba(75,191,133,.15)';
+    el.style.background = 'transparent';
+    el.style.color = 'var(--muted)';
+  } else {
+    if (val === 'no_preference') editingLifestyle.eveningPreferences = ['no_preference'];
+    else {
+      editingLifestyle.eveningPreferences = editingLifestyle.eveningPreferences.filter(function(v){return v!=='no_preference';});
+      editingLifestyle.eveningPreferences.push(val);
+    }
+    el.style.borderColor = 'var(--bloom)';
+    el.style.background = 'rgba(61,155,106,.1)';
+    el.style.color = 'var(--cream)';
+  }
+}
+
+function field(label, id, type, options, currentVal) {
+  var html = '<div style="margin-bottom:14px;">';
+  html += '<label style="font-size:.6rem;letter-spacing:.12em;color:var(--bloom);text-transform:uppercase;display:block;margin-bottom:5px;">' + label + '</label>';
+  if (type === 'select') {
+    html += '<select id="' + id + '" style="width:100%;padding:10px 12px;background:rgba(6,13,8,.8);' +
+      'border:1px solid rgba(75,191,133,.18);color:var(--cream);font-family:DM Sans,sans-serif;' +
+      'font-size:.75rem;outline:none;-webkit-appearance:none;">';
+    options.forEach(function(o) {
+      html += '<option value="' + o.v + '"' + (currentVal === o.v ? ' selected' : '') + '>' + o.t + '</option>';
+    });
+    html += '</select>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function textField(label, id, placeholder, currentVal, rows) {
+  var html = '<div style="margin-bottom:14px;">';
+  html += '<label style="font-size:.6rem;letter-spacing:.12em;color:var(--bloom);text-transform:uppercase;display:block;margin-bottom:5px;">' + label + '</label>';
+  if (rows && rows > 1) {
+    html += '<textarea id="' + id + '" rows="' + rows + '" placeholder="' + placeholder + '" style="width:100%;padding:10px 12px;background:rgba(6,13,8,.8);border:1px solid rgba(75,191,133,.18);color:var(--cream);font-family:DM Sans,sans-serif;font-size:.75rem;outline:none;resize:vertical;line-height:1.6;">' + currentVal + '</textarea>';
+  } else {
+    html += '<input type="text" id="' + id + '" placeholder="' + placeholder + '" value="' + currentVal + '" style="width:100%;padding:10px 12px;background:rgba(6,13,8,.8);border:1px solid rgba(75,191,133,.18);color:var(--cream);font-family:DM Sans,sans-serif;font-size:.75rem;outline:none;">';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ── MODAL FLOW ──
+var SETUP_STEPS = 4;
+
+function startGoalsSetup() {
+  editingIntents = currentIntents.slice();
+  editingGoalProfile = JSON.parse(JSON.stringify(currentGoalProfile));
+  editingPhysical = JSON.parse(JSON.stringify(currentPhysical || {}));
+  editingLifestyle = JSON.parse(JSON.stringify(currentLifestyle || {}));
+  setupStep = 1;
+  document.getElementById('goals-setup-modal').style.display = 'flex';
+  renderSetupStep();
+}
+
+function closeGoalsSetup() {
+  document.getElementById('goals-setup-modal').style.display = 'none';
+}
+
+function renderSetupStep() {
+  var labels = ['Focus Areas', 'Your Goals', 'Physical Setup', 'Lifestyle Context'];
+  document.getElementById('setup-step-label').textContent = 'Step ' + setupStep + ' of ' + SETUP_STEPS;
+  document.getElementById('setup-step-title').textContent = labels[setupStep - 1];
+  document.getElementById('setup-progress-bar').style.width = (setupStep / SETUP_STEPS * 100) + '%';
+  document.getElementById('setup-back-btn').style.display = setupStep > 1 ? 'block' : 'none';
+
+  var nextBtn = document.getElementById('setup-next-btn');
+  nextBtn.textContent = setupStep < SETUP_STEPS ? 'Continue →' : 'Save & Unlock Program ✦';
+
+  if (setupStep === 1) renderStep1();
+  else if (setupStep === 2) renderStep2();
+  else if (setupStep === 3) renderStep3();
+  else if (setupStep === 4) renderStep4();
+}
+
+function setupStepNext() {
+  if (setupStep === 1 && editingIntents.length === 0) {
+    alert('Please select at least one focus area to continue.');
+    return;
+  }
+  if (setupStep === 3) collectPhysical();
+  if (setupStep === 4) {
+    collectLifestyle();
+    saveGoalsSetup();
+    return;
+  }
+  setupStep++;
+  renderSetupStep();
+  document.getElementById('setup-step-content').scrollTop = 0;
+}
+
+function setupStepBack() {
+  if (setupStep > 1) {
+    setupStep--;
+    renderSetupStep();
+  }
+}
+
+function collectPhysical() {
+  editingPhysical = {
+    fitnessGoal: (document.getElementById('p-fitness')||{}).value || '',
+    activityLevel: (document.getElementById('p-activity')||{}).value || '',
+    dietaryFramework: (document.getElementById('p-diet')||{}).value || '',
+    allergies: (document.getElementById('p-allergies')||{}).value || '',
+    currentWeight: (document.getElementById('p-weight')||{}).value || '',
+    weightGoal: (document.getElementById('p-weight-goal')||{}).value || ''
+  };
+}
+
+function collectLifestyle() {
+  editingLifestyle.wakeTime = (document.getElementById('l-wake')||{}).value || '';
+  editingLifestyle.sleepTime = (document.getElementById('l-sleep')||{}).value || '';
+  editingLifestyle.cookingAccess = (document.getElementById('l-cooking')||{}).value || '';
+  editingLifestyle.intention = (document.getElementById('l-intention')||{}).value || '';
+}
+
+async function saveGoalsSetup() {
   currentIntents = editingIntents.slice();
-  currentGoalProfile = Object.assign({}, editingGoalProfile);
-  renderGoalsList();
-  closeGoalsModal();
+  currentGoalProfile = JSON.parse(JSON.stringify(editingGoalProfile));
+  currentPhysical = JSON.parse(JSON.stringify(editingPhysical));
+  currentLifestyle = JSON.parse(JSON.stringify(editingLifestyle));
+
+  closeGoalsSetup();
+  updateGoalsDisplay();
+  updateProgramStatusBlock();
 
   if (currentUser) {
     try {
-      await supabaseClient.from('profiles').update({
+      var supa = supabaseClient;
+      await supa.from('profiles').update({
         intent_selections: currentIntents,
-        goal_profile: currentGoalProfile
+        goal_profile: currentGoalProfile,
+        physical_data: currentPhysical,
+        lifestyle_data: currentLifestyle,
+        goals_complete: true
       }).eq('id', currentUser.id);
-    } catch(e) {}
+    } catch(e) { console.log('Goals save error:', e); }
   }
 }
 
-function closeGoalsModal() {
-  document.getElementById('goals-modal').style.display = 'none';
-}
+// ── DISPLAY LOGIC ──
+var currentPhysical = {};
+var currentLifestyle = {};
 
-// ══════════════════════════════════════════════════════════════
-// ZENZO COMPANION
-// Strict medical disclaimer framing. Helps users think through
-// and refine their goal_profile answers via guided conversation.
-// ══════════════════════════════════════════════════════════════
-function openZenZo() {
-  var panel = document.getElementById('zenzo-panel');
-  panel.style.display = 'block';
-  if (document.getElementById('zenzo-messages').children.length === 0) {
-    var doshaNames = {p:'Pitta', k:'Kapha', v:'Vata'};
-    var primaryName = currentUserProfile ? doshaNames[currentUserProfile.dosha_primary] : null;
-    var greeting = "Hi, I'm ZenZo. I'm here to help you think through your goals and refine your OJAS program — " +
-      "drawing on Ayurvedic principles and general wellness research. ";
-    if (primaryName) {
-      greeting += "I can see you're " + primaryName + "-dominant — happy to talk through anything " +
-        "related to that, or whatever's on your mind. ";
-    }
-    greeting += "I'm not a doctor and can't diagnose or treat anything. For symptoms, medications, or anything " +
-      "that concerns you medically, please talk to a licensed physician — I'll always point that out " +
-      "if it comes up. What would you like to explore or refine today?";
-    addZenZoMessage('zenzo', greeting);
-    zenzoConversation.push({role:'assistant', content: greeting});
+function updateGoalsDisplay() {
+  var empty = document.getElementById('goals-empty-state');
+  var filled = document.getElementById('goals-filled-state');
+  if (currentIntents.length === 0) {
+    if (empty) empty.style.display = 'block';
+    if (filled) filled.style.display = 'none';
+    return;
   }
-  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-function closeZenZo() {
-  document.getElementById('zenzo-panel').style.display = 'none';
-}
-
-function addZenZoMessage(from, text) {
-  var msgs = document.getElementById('zenzo-messages');
-  var div = document.createElement('div');
-  if (from === 'zenzo') {
-    div.style.cssText = 'display:flex;gap:10px;align-items:flex-start;';
-    div.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;' +
-      'background:radial-gradient(circle at 35% 35%,rgba(237,184,48,.35),rgba(232,146,26,.15));' +
-      'display:flex;align-items:center;justify-content:center;font-size:.7rem;">✦</div>' +
-      '<div style="background:rgba(237,184,48,.06);border:1px solid rgba(237,184,48,.12);' +
-      'padding:10px 13px;font-size:.73rem;color:var(--cream);line-height:1.7;flex:1;">' + text + '</div>';
-  } else {
-    div.style.cssText = 'display:flex;justify-content:flex-end;';
-    div.innerHTML = '<div style="background:rgba(61,155,106,.1);border:1px solid rgba(75,191,133,.15);' +
-      'padding:10px 13px;font-size:.73rem;color:var(--cream);line-height:1.7;max-width:80%;">' + text + '</div>';
-  }
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-// Keyword-based response logic with medical-topic detection
-// In production this would call the Anthropic API with a system prompt
-// enforcing the same disclaimers — this local version demonstrates the
-// guardrail pattern and conversational structure.
-var medicalKeywords = ['diagnos','medication','prescri','disease','condition','symptom','doctor',
-  'pain','disorder','illness','cancer','diabetes','thyroid','blood pressure','depression','anxiety disorder',
-  'medicine','drug','dosage','treat my','cure','infection'];
-
-// ══════════════════════════════════════════════════════════════
-// ZENZO SYSTEM PROMPT
-// Full architecture: identity, Ayurvedic grounding, communication
-// principles, medical guardrails, evidence standards, discovery arc.
-// See zenzo-system-prompt.md for the complete reference document.
-// ══════════════════════════════════════════════════════════════
-var ZENZO_SYSTEM_PROMPT_BASE = "You are ZenZo, the companion built into OJAS — " +
-"a platform that helps people understand their tridoshic constitution (Vata, Pitta, Kapha) " +
-"and build daily practices aligned with it.\n\n" +
-"You are not a guru, healer, or doctor. You are a knowledgeable, grounded companion who helps " +
-"people think clearly about their own patterns, using the language and framework of Ayurveda " +
-"alongside what modern research says about the same territory.\n\n" +
-"CORE COMMUNICATION PRINCIPLES:\n" +
-"1. DISCOVERY BEFORE ADVICE: Your default is asking before telling. When someone brings a " +
-"question, your first move is almost always a clarifying question or reflection, not a " +
-"recommendation. Only after they've reflected and shared more do you move toward concrete " +
-"directions — framed as options to explore, not prescriptions.\n" +
-"2. GROUND EVERY ABSTRACT CONCEPT: When you use Ayurvedic terminology (Vata, Pitta, Kapha, " +
-"Agni, Ama, Ojas, Dosha, Dinacharya, etc.), always pair the term with a concrete, physical, " +
-"plain-language explanation. Use real Sanskrit terms but never assume prior knowledge.\n" +
-"3. SOVEREIGNTY FRAMING: Never position yourself as the source of someone's healing or " +
-"transformation. The person already has what they need; you help them see and apply it. " +
-"Avoid: 'I'll fix this', 'this will heal you', 'follow this and you'll be transformed'. " +
-"Use: 'here's what might help you notice...', 'you know your patterns best — does this match " +
-"what you've experienced?', 'this is something to experiment with'.\n" +
-"4. NO OVERPROMISING: Never guarantee outcomes. Use 'may support', 'is associated with', " +
-"'many people find helpful' — never 'will fix' or 'will heal'.\n" +
-"5. COLLABORATIVE NOT HIERARCHICAL: Frame yourself as part of the person's process, not " +
-"above it. 'Let's think through this together' not 'I'll guide you to your potential'.\n" +
-"6. LEAD WITH THE TANGIBLE: Start with what the person would actually experience or do, " +
-"then explain the underlying concept — not the other way around.\n\n" +
-"MEDICAL GUARDRAILS (NON-NEGOTIABLE):\n" +
-"You do NOT diagnose conditions, recommend medications or dosages, claim any practice " +
-"treats/cures/prevents disease, interpret symptoms/labs/imaging, or give cleanse/fasting/herb " +
-"guidance to anyone indicating a medical condition, pregnancy, or medication use beyond " +
-"'please discuss with your doctor first'.\n" +
-"If a message includes named medical conditions, medications/dosages, symptom-as-diagnosis " +
-"questions, pregnancy/fertility/children's health, or any self-harm/crisis language — " +
-"immediately and clearly state you cannot address the medical dimension and redirect to a " +
-"licensed physician BEFORE offering any other reflection. Use this template: " +
-"'This is something I want to be careful with — [reason]. I'm not able to weigh in on that " +
-"safely, and I'd genuinely encourage you to bring this to a doctor or qualified practitioner. " +
-"If it's helpful, I'm glad to talk about the lifestyle and routine side of things alongside " +
-"whatever your doctor recommends — would that be useful?'\n\n" +
-"EVIDENCE STANDARDS:\n" +
-"In normal conversation, explain concepts in your own words without citation-heavy responses. " +
-"When asked 'is that true?' or 'what's the evidence?', shift modes: name the traditional/" +
-"classical source for Ayurvedic claims, state whether modern research has studied the same " +
-"territory and what it found (without overstating certainty), and if no evidence exists " +
-"either way, say so plainly. NEVER fabricate citations, studies, journals, or statistics — " +
-"if you don't have a real source, say so. Use calibrated language: 'well-established' " +
-"(traditional + modern alignment), 'traditionally understood as' (strong tradition, " +
-"limited modern study), 'emerging research suggests' (preliminary findings), " +
-"'more anecdotal' (neither strongly supports).\n\n" +
-"CONVERSATIONAL ARC: Reflect & clarify -> connect to their constitution (without being " +
-"deterministic) -> offer frameworks as experiments, not prescriptions -> return agency " +
-"('does this resonate? which feels worth trying first?') -> connect back to their editable " +
-"Goals & Focus section in their OJAS program when relevant.\n\n" +
-"ACCOUNTABILITY: When you don't know something, say so directly. If you said something " +
-"earlier that was incomplete or off, correct it plainly without over-apologizing. Be warm " +
-"but not saccharine — no performative enthusiasm, no flattery, genuine engagement.";
-
-function buildZenZoSystemPrompt() {
-  var doshaNames = {p:'Pitta', k:'Kapha', v:'Vata'};
-  var primary = currentUserProfile ? doshaNames[currentUserProfile.dosha_primary] : 'unknown';
-  var secondary = currentUserProfile ? doshaNames[currentUserProfile.dosha_secondary] : 'unknown';
-  var tertiary = currentUserProfile ? doshaNames[currentUserProfile.dosha_tertiary] : 'unknown';
-
-  var goalsContext = 'No focus areas selected yet.';
-  if (currentIntents.length > 0) {
-    goalsContext = 'Their selected focus areas and specific goals: ';
-    currentIntents.forEach(function(key) {
-      var fu = followupData[key];
-      if (!fu) return;
-      var answer = currentGoalProfile[key];
-      var answerText = answer ? (fu.options.find(function(o){return o.val===answer;}) || {}).text : 'not yet specified';
-      goalsContext += '\n- ' + fu.label + ': ' + answerText;
-    });
-  }
-
-  return ZENZO_SYSTEM_PROMPT_BASE + '\n\n' +
-    'CURRENT USER CONTEXT:\n' +
-    'This person\'s tridoshic constitution is ' + primary + ' (dominant), ' + secondary +
-    ' (secondary), ' + tertiary + ' (tertiary). ' + goalsContext +
-    '\n\nUse this context naturally when relevant, but don\'t force it into every response.';
-}
-
-// ══════════════════════════════════════════════════════════════
-// SEND MESSAGE — calls Claude API with ZenZo system prompt
-// ══════════════════════════════════════════════════════════════
-var zenzoConversation = [];
-
-function sendZenZoMessage() {
-  var input = document.getElementById('zenzo-input');
-  var text = input.value.trim();
-  if (!text) return;
-  addZenZoMessage('user', text);
-  input.value = '';
-  zenzoConversation.push({role: 'user', content: text});
-
-  // Show thinking indicator
-  var msgs = document.getElementById('zenzo-messages');
-  var thinking = document.createElement('div');
-  thinking.id = 'zenzo-thinking';
-  thinking.style.cssText = 'display:flex;gap:10px;align-items:center;';
-  thinking.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;' +
-    'background:radial-gradient(circle at 35% 35%,rgba(237,184,48,.35),rgba(232,146,26,.15));' +
-    'display:flex;align-items:center;justify-content:center;font-size:.7rem;">✦</div>' +
-    '<div style="font-size:.7rem;color:var(--muted);font-style:italic;">ZenZo is reflecting...</div>';
-  msgs.appendChild(thinking);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  callZenZoAPI(text);
-}
-
-async function callZenZoAPI(userText) {
-  try {
-    var response = await fetch("/.netlify/functions/zenzo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system: buildZenZoSystemPrompt(),
-        messages: zenzoConversation
-      })
-    });
-
-    var data = await response.json();
-    var thinking = document.getElementById('zenzo-thinking');
-    if (thinking) thinking.remove();
-
-    var textBlocks = (data.content || []).filter(function(b){ return b.type === 'text'; });
-    var replyText = textBlocks.map(function(b){ return b.text; }).join('\n');
-
-    if (!replyText) {
-      replyText = "I'm having trouble responding right now — let's try that again in a moment.";
-    }
-
-    zenzoConversation.push({role: 'assistant', content: replyText});
-    addZenZoMessage('zenzo', formatZenZoText(replyText));
-
-  } catch(e) {
-    var thinking = document.getElementById('zenzo-thinking');
-    if (thinking) thinking.remove();
-    addZenZoMessage('zenzo',
-      "I'm having trouble connecting right now. Your question is saved — " +
-      "try sending it again in a moment, or use 'Edit My Goals' to update your " +
-      "program directly in the meantime."
-    );
-  }
-}
-
-// Light formatting: convert **bold** and line breaks to HTML
-function formatZenZoText(text) {
-  var escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  escaped = escaped.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
-  return escaped;
-}
-
-// Hook goals rendering into dashboard load
-var _origLoadDashboard = loadDashboard;
-loadDashboard = async function(user) {
-  await _origLoadDashboard(user);
-  try {
-    var profile = await supabaseClient.from('profiles').select('*').eq('id',user.id).single();
-    if (profile.data) {
-      currentIntents = profile.data.intent_selections || [];
-      currentGoalProfile = profile.data.goal_profile || {};
-      currentUserProfile = profile.data;
-    }
-  } catch(e) {}
+  if (empty) empty.style.display = 'none';
+  if (filled) filled.style.display = 'block';
   renderGoalsList();
-};
+}
+
+function renderGoalsList() {
+  var listEl = document.getElementById('goals-list');
+  if (!listEl) return;
+  var html = '';
+  currentIntents.forEach(function(key) {
+    var fu = followupData[key];
+    if (!fu) return;
+    var entry = currentGoalProfile[key] || {};
+    var selectedVals = entry.selected || [];
+    var note = entry.note || '';
+    var answerTexts = selectedVals.map(function(val) {
+      var opt = (fu.options || []).find(function(o){ return o.val === val; });
+      return opt ? opt.text : null;
+    }).filter(Boolean);
+
+    html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;' +
+      'border:1px solid rgba(75,191,133,.12);background:rgba(61,155,106,.04);">';
+    html += '<span style="font-size:1rem;flex-shrink:0;">' + fu.icon + '</span>';
+    html += '<div style="flex:1;">';
+    html += '<div style="font-size:.72rem;color:var(--cream);font-weight:500;margin-bottom:3px;">' + fu.label + '</div>';
+    if (answerTexts.length > 0) {
+      html += '<ul style="margin:0;padding-left:14px;font-size:.64rem;color:var(--muted);line-height:1.7;">';
+      answerTexts.forEach(function(t){ html += '<li>' + t + '</li>'; });
+      html += '</ul>';
+    } else {
+      html += '<div style="font-size:.64rem;color:var(--muted);font-style:italic;">No specific answer — click Edit to add detail</div>';
+    }
+    if (note) {
+      html += '<div style="margin-top:5px;padding:6px 8px;background:rgba(75,191,133,.06);' +
+        'border-left:2px solid rgba(75,191,133,.25);font-size:.62rem;color:var(--cream);' +
+        'line-height:1.6;font-style:italic;">' + note + '</div>';
+    }
+    html += '</div></div>';
+  });
+  listEl.innerHTML = html;
+}
+
+function updateProgramStatusBlock() {
+  var locked = document.getElementById('program-locked');
+  var unlocked = document.getElementById('program-unlocked');
+  var active = document.getElementById('program-active');
+  if (!locked) return;
+
+  var hasProgram = currentUserProfile && currentUserProfile.program_status === 'active';
+  var hasGoals = currentIntents.length > 0;
+
+  if (hasProgram) {
+    locked.style.display = 'none';
+    unlocked.style.display = 'none';
+    active.style.display = 'block';
+    var dayEl = document.getElementById('active-day-num');
+    if (dayEl && currentUserProfile) dayEl.textContent = currentUserProfile.current_day || 1;
+  } else if (hasGoals) {
+    locked.style.display = 'none';
+    unlocked.style.display = 'block';
+    active.style.display = 'none';
+  } else {
+    locked.style.display = 'block';
+    unlocked.style.display = 'none';
+    active.style.display = 'none';
+  }
+}
+
+function openProgramBuild() {
+  // Sprint 3: AI connection + program generation flow
+  // For now, show a coming-soon message
+  alert('Program build coming in the next update — your goals are saved and ready. Stay tuned.');
+}
+
+
 
 </script>
 </body>
