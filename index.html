@@ -567,6 +567,45 @@ body{background:radial-gradient(ellipse 100% 100% at 50% 0%,#0A1A0E 0%,#060D08 6
 
 
 @keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── RESULTS PAGE ── */
+.results-content{max-width:100%;overflow-x:hidden;}
+.dosha-bar-row{margin-bottom:16px;}
+.dosha-bar-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.dosha-bar-name{font-size:.72rem;color:var(--cream);font-weight:500;letter-spacing:.08em;}
+.dosha-bar-pct{font-family:Playfair Display,serif;font-size:1.1rem;}
+.dosha-bar-track{height:6px;background:rgba(255,255,255,.06);overflow:hidden;border-radius:0;}
+.dosha-bar-fill{height:100%;transition:width 1s ease;border-radius:0;}
+.dosha-bar-fill.pitta{background:linear-gradient(90deg,var(--fire),var(--pollen));}
+.dosha-bar-fill.kapha{background:linear-gradient(90deg,var(--leaf),var(--bloom));}
+.dosha-bar-fill.vata{background:linear-gradient(90deg,var(--vata),#A8D4EE);}
+.dosha-meaning-card{padding:16px;border:1px solid rgba(75,191,133,.12);background:rgba(10,26,14,.4);}
+.dosha-meaning-card.primary{border-color:rgba(232,146,26,.25);background:rgba(232,146,26,.04);}
+.dosha-meaning-card.secondary{border-color:rgba(61,155,106,.2);}
+.dosha-meaning-card.tertiary{border-color:rgba(123,167,196,.15);}
+.audit-tab{padding:6px 14px;border:1px solid rgba(75,191,133,.18);background:transparent;
+  color:var(--muted);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;
+  cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;}
+.audit-tab.active,.audit-tab:hover{border-color:var(--bloom);color:var(--bloom);}
+.audit-item{padding:12px 14px;border:1px solid rgba(75,191,133,.08);background:rgba(10,26,14,.3);
+  margin-bottom:8px;transition:border-color .2s;}
+.audit-item:hover{border-color:rgba(75,191,133,.2);}
+.audit-item.answered{border-color:rgba(75,191,133,.18);}
+.audit-q{font-size:.65rem;color:var(--muted);margin-bottom:4px;letter-spacing:.04em;}
+.audit-answer{font-size:.75rem;color:var(--cream);margin-bottom:8px;line-height:1.5;}
+.audit-dosha-badge{display:inline-block;padding:2px 8px;font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:8px;}
+.audit-dosha-badge.v{background:rgba(123,167,196,.12);color:var(--vata);}
+.audit-dosha-badge.p{background:rgba(232,146,26,.12);color:var(--fire);}
+.audit-dosha-badge.k{background:rgba(61,155,106,.12);color:var(--bloom);}
+.audit-dosha-badge.other{background:rgba(255,255,255,.06);color:var(--muted);}
+.audit-clarifier{width:100%;padding:8px 10px;background:rgba(6,13,8,.6);
+  border:1px solid rgba(75,191,133,.12);color:var(--cream);font-family:DM Sans,sans-serif;
+  font-size:.7rem;outline:none;resize:none;line-height:1.5;min-height:36px;
+  transition:border-color .2s;}
+.audit-clarifier:focus{border-color:var(--bloom);}
+.audit-clarifier::placeholder{color:rgba(138,175,144,.35);}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -789,126 +828,103 @@ function getSupa(){
 
   <!-- PHASE 5: GOALS & LIFESTYLE INTENT -->
   <div class="quiz-phase" id="phase-5">
-    <div class="phase-label">Phase 5 of 5 — Your Goals & Focus Areas</div>
-    <h2 class="phase-title">What Are You Here to Build?</h2>
-    <p class="phase-desc">This final section customises your personalised program. Select all the areas of your life you want to improve, transform, or build routines around. Your answers shape exactly which sections of your program are built out in depth.</p>
+    <div class="phase-label">Phase 5 of 5 — Final Details</div>
+    <h2 class="phase-title">A few more layers to your constitution</h2>
+    <p class="phase-desc">These final questions complete your tridoshic profile. Each answer adds depth to your constitutional blueprint — this is still about who you are by nature, not what you want to change.</p>
 
-    <span class="slbl" style="margin-top:0;">Select all areas you want to focus on</span>
-    <div class="intent-grid" id="intent-grid">
-      <div class="intent-card" data-intent="nutrition" onclick="toggleIntent(this)">
-        <span class="ic-icon">🍽️</span>
-        <div class="ic-label">Nutrition & Meals</div>
-        <div class="ic-sub">Dosha-aligned eating, meal plans, recipes</div>
-      </div>
-      <div class="intent-card" data-intent="fitness" onclick="toggleIntent(this)">
-        <span class="ic-icon">💪</span>
-        <div class="ic-label">Fitness & Movement</div>
-        <div class="ic-sub">Training split, exercise types, recovery</div>
-      </div>
-      <div class="intent-card" data-intent="skin" onclick="toggleIntent(this)">
-        <span class="ic-icon">✨</span>
-        <div class="ic-label">Skin Health</div>
-        <div class="ic-sub">Skincare routine, products, acne, scarring</div>
-      </div>
-      <div class="intent-card" data-intent="hair" onclick="toggleIntent(this)">
-        <span class="ic-icon">💆</span>
-        <div class="ic-label">Hair Care</div>
-        <div class="ic-sub">Hair type, scalp health, hair loss, treatments</div>
-      </div>
-      <div class="intent-card" data-intent="supplements" onclick="toggleIntent(this)">
-        <span class="ic-icon">🌿</span>
-        <div class="ic-label">Herbs & Supplements</div>
-        <div class="ic-sub">Ayurvedic herbs, adaptogens, daily stack</div>
-      </div>
-      <div class="intent-card" data-intent="sleep" onclick="toggleIntent(this)">
-        <span class="ic-icon">🌙</span>
-        <div class="ic-label">Sleep & Recovery</div>
-        <div class="ic-sub">Sleep quality, circadian rhythm, restoration</div>
-      </div>
-      <div class="intent-card" data-intent="stress" onclick="toggleIntent(this)">
-        <span class="ic-icon">🧘</span>
-        <div class="ic-label">Stress & Mind</div>
-        <div class="ic-sub">Meditation, breathwork, mental clarity</div>
-      </div>
-      <div class="intent-card" data-intent="digestion" onclick="toggleIntent(this)">
-        <span class="ic-icon">🔥</span>
-        <div class="ic-label">Digestion & Gut</div>
-        <div class="ic-sub">Agni, gut health, detox, Panchakarma</div>
-      </div>
-      <div class="intent-card" data-intent="oral" onclick="toggleIntent(this)">
-        <span class="ic-icon">😁</span>
-        <div class="ic-label">Oral Health</div>
-        <div class="ic-sub">Oil pulling, gum health, oral hygiene rituals</div>
-      </div>
-      <div class="intent-card" data-intent="energy" onclick="toggleIntent(this)">
-        <span class="ic-icon">⚡</span>
-        <div class="ic-label">Energy & Vitality</div>
-        <div class="ic-sub">Ojas, daily energy, stamina, performance</div>
-      </div>
-      <div class="intent-card" data-intent="relationships" onclick="toggleIntent(this)">
-        <span class="ic-icon">🤝</span>
-        <div class="ic-label">Relationships & Work</div>
-        <div class="ic-sub">How your dosha shapes work & relationships</div>
-      </div>
-      <div class="intent-card" data-intent="cleanse" onclick="toggleIntent(this)">
-        <span class="ic-icon">🫧</span>
-        <div class="ic-label">Cleanse & Detox</div>
-        <div class="ic-sub">Seasonal cleansing, Ama removal, fasting</div>
+    <div class="q-card" id="qcard-41">
+      <div class="q-num">Q 41</div>
+      <div class="q-text">When you have unstructured free time, what do you naturally gravitate toward?</div>
+      <div class="options">
+        <button class="opt" data-q="41" data-val="v" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">Starting something new — a creative project, exploring an idea, or trying something I've never done before</span></button>
+        <button class="opt" data-q="41" data-val="p" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">Working toward a goal — even free time becomes productive; I optimise, improve, or achieve something</span></button>
+        <button class="opt" data-q="41" data-val="k" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">Relaxing with comfort — resting, enjoying food, spending unhurried time with people I love</span></button>
       </div>
     </div>
 
-    <span class="slbl">A few more details</span>
-    <div class="q-card">
-      <div class="q-num">Q 49</div>
-      <div class="q-text">What best describes your current relationship with health and wellness?</div>
+    <div class="q-card" id="qcard-42">
+      <div class="q-num">Q 42</div>
+      <div class="q-text">How does your body typically respond to caffeine?</div>
       <div class="options">
-        <button class="opt" data-q="49" data-val="beginner" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">A</span>
-          <span class="opt-text">Just starting out — I want simple, accessible guidance to build healthy foundations</span>
-        </button>
-        <button class="opt" data-q="49" data-val="intermediate" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">B</span>
-          <span class="opt-text">Active explorer — I have some practices but want deeper Ayurvedic alignment</span>
-        </button>
-        <button class="opt" data-q="49" data-val="advanced" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">C</span>
-          <span class="opt-text">Committed practitioner — I want a comprehensive, detailed protocol for optimisation</span>
-        </button>
+        <button class="opt" data-q="42" data-val="v" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">Strongly — even small amounts make me jittery, anxious, or wired; it consistently disrupts my sleep</span></button>
+        <button class="opt" data-q="42" data-val="p" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">It sharpens me — improves focus but too much makes me irritable, acidic, or overheated</span></button>
+        <button class="opt" data-q="42" data-val="k" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">I barely notice it — can drink coffee late and still sleep fine; gives gentle, even energy without edge</span></button>
       </div>
     </div>
 
-    <div class="q-card">
-      <div class="q-num">Q 50</div>
-      <div class="q-text">What is your primary health motivation right now?</div>
+    <div class="q-card" id="qcard-43">
+      <div class="q-num">Q 43</div>
+      <div class="q-text">How do you naturally respond when plans change unexpectedly?</div>
       <div class="options">
-        <button class="opt" data-q="50" data-val="prevent" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">A</span>
-          <span class="opt-text">Prevention — I want to maintain what I have and stay healthy long-term</span>
-        </button>
-        <button class="opt" data-q="50" data-val="heal" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">B</span>
-          <span class="opt-text">Healing — I have specific imbalances, conditions or symptoms I want to address</span>
-        </button>
-        <button class="opt" data-q="50" data-val="optimise" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">C</span>
-          <span class="opt-text">Optimisation — I perform well and want to take my body, mind and energy to the next level</span>
-        </button>
-        <button class="opt" data-q="50" data-val="transform" onclick="selectOpt(this)">
-          <div class="opt-dot"></div><span class="opt-label">D</span>
-          <span class="opt-text">Transformation — I want a complete lifestyle overhaul aligned with my true nature</span>
-        </button>
+        <button class="opt" data-q="43" data-val="v" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">I can spiral — sudden change creates anxiety or overwhelm even if the new plan is perfectly fine</span></button>
+        <button class="opt" data-q="43" data-val="p" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">I get frustrated — I had a plan and a reason for it; unexpected change feels like inefficiency</span></button>
+        <button class="opt" data-q="43" data-val="k" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">I adapt slowly but steadily — I need a moment to recalibrate but rarely feel destabilised</span></button>
+      </div>
+    </div>
+
+    <div class="q-card" id="qcard-44">
+      <div class="q-num">Q 44</div>
+      <div class="q-text">What is your body's typical reaction to travel or time zone changes?</div>
+      <div class="options">
+        <button class="opt" data-q="44" data-val="v" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">Hard hit — disrupted sleep, digestion, and anxiety; I take the longest of anyone to adjust</span></button>
+        <button class="opt" data-q="44" data-val="p" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">Irritable adjustment — I push through on willpower but I'm short-tempered until my routine resumes</span></button>
+        <button class="opt" data-q="44" data-val="k" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">Minimal impact — I adjust within a day or two without much trouble; sleep and digestion stay fairly stable</span></button>
+      </div>
+    </div>
+
+    <div class="q-card" id="qcard-45">
+      <div class="q-num">Q 45</div>
+      <div class="q-text">When you are at your best, what do people most consistently notice about you?</div>
+      <div class="options">
+        <button class="opt" data-q="45" data-val="v" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">My energy and ideas — I bring enthusiasm, creativity, and a sense of possibility into a room</span></button>
+        <button class="opt" data-q="45" data-val="p" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">My clarity and drive — I bring focus, direction, and the ability to get things done efficiently</span></button>
+        <button class="opt" data-q="45" data-val="k" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">My steadiness and warmth — I bring calm, reliability, and genuine care to the people around me</span></button>
+      </div>
+    </div>
+
+    <div class="q-card" id="qcard-46">
+      <div class="q-num">Q 46</div>
+      <div class="q-text">How does your mind typically behave when you are trying to fall asleep?</div>
+      <div class="options">
+        <button class="opt" data-q="46" data-val="v" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">Racing — thoughts jump and spiral; I replay the day, worry about tomorrow, or get lost in random ideas</span></button>
+        <button class="opt" data-q="46" data-val="p" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">Problem-solving — I find myself planning, strategising, or processing unresolved issues from the day</span></button>
+        <button class="opt" data-q="46" data-val="k" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">Quiet — once I'm comfortable, my mind settles quickly; I rarely have trouble switching off</span></button>
+      </div>
+    </div>
+
+    <span class="slbl" style="margin-top:28px;">Two Final Questions</span>
+
+    <div class="q-card" id="qcard-47">
+      <div class="q-num">Q 47</div>
+      <div class="q-text">How would you describe your current experience with Ayurveda and wellness practices?</div>
+      <div class="q-hint">This helps us calibrate how we explain and present your program — there are no wrong answers.</div>
+      <div class="options">
+        <button class="opt" data-q="47" data-val="beginner" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">New to all of this — I'm curious but starting from scratch; please keep it approachable</span></button>
+        <button class="opt" data-q="47" data-val="intermediate" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">Some familiarity — I've explored wellness practices and know a bit about Ayurveda but want to go deeper</span></button>
+        <button class="opt" data-q="47" data-val="advanced" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">Practiced — I have real experience with Ayurvedic principles and want a sophisticated, in-depth program</span></button>
+      </div>
+    </div>
+
+    <div class="q-card" id="qcard-48">
+      <div class="q-num">Q 48</div>
+      <div class="q-text">What is driving you to do this now?</div>
+      <div class="q-hint">This becomes the foundation of your personal intention — the reason your program is built around.</div>
+      <div class="options">
+        <button class="opt" data-q="48" data-val="prevent" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">A</span><span class="opt-text">Prevention — I feel good now and want to stay that way; building practices before problems arise</span></button>
+        <button class="opt" data-q="48" data-val="heal" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">B</span><span class="opt-text">Healing — something is off and I want to address it; looking to restore balance and wellbeing</span></button>
+        <button class="opt" data-q="48" data-val="optimise" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">C</span><span class="opt-text">Optimisation — I already take care of myself and want to reach the next level of performance and vitality</span></button>
+        <button class="opt" data-q="48" data-val="transform" onclick="selectOpt(this)"><div class="opt-dot"></div><span class="opt-label">D</span><span class="opt-text">Transformation — I'm ready for a significant life change; this is about becoming a fundamentally different version of myself</span></button>
       </div>
     </div>
 
     <div class="quiz-nav">
       <button class="btn-prev" onclick="prevPhase()">← Back</button>
       <button class="btn-next" id="next-5" onclick="nextPhase(5)" style="background:var(--gold);color:var(--ink);border-color:var(--gold);">
-        Continue ✦
+        See My Results ✦
       </button>
     </div>
   </div>
 
-  <!-- ══ PHASE 6: ACCOUNT CREATION (natural quiz completion) ══ -->
   <div class="quiz-phase" id="phase-6">
     <div class="phase-label" style="color:var(--pollen);">Almost There — Save Your Practice</div>
     <h2 class="phase-title" style="font-size:1.5rem;">Your blueprint is ready.<br><em style="font-style:italic;color:var(--pollen);">Create your account to unlock it.</em></h2>
@@ -1030,37 +1046,93 @@ function getSupa(){
 
 <!-- ══════════════════════════════════════════════ RESULTS ══ -->
 <section class="results-section" id="results-section">
+
+  <!-- ══ RESULTS HEADER ══ -->
   <div class="quiz-header">
-    <div class="quiz-logo" style="font-family:Playfair Display,serif;font-size:.95rem;color:var(--pollen);letter-spacing:.15em;">OJAS</div>
-    <button class="back-btn" onclick="retakeQuiz()" style="margin:0;border:none;background:transparent;padding:0;display:flex;align-items:center;gap:5px;font-size:.62rem;color:var(--muted);cursor:pointer;letter-spacing:.12em;">
-      ← Retake Quiz
+    <div style="font-family:Playfair Display,serif;font-size:.95rem;color:var(--pollen);letter-spacing:.2em;font-weight:700;">OJAS</div>
+    <button onclick="retakeQuiz()" style="margin:0;border:none;background:transparent;padding:0;display:flex;align-items:center;gap:5px;font-size:.62rem;color:var(--muted);cursor:pointer;letter-spacing:.1em;">
+      ← Retake Assessment
     </button>
-    <div style="margin-left:auto;font-size:.62rem;color:var(--muted);">Your Personalised Program</div>
   </div>
 
-  <div class="results-hero">
-    <div class="eyebrow" style="color:var(--bloom);letter-spacing:.4em;font-size:.55rem;text-transform:uppercase;margin-bottom:8px;">✦ Your Ayurvedic Constitution ✦</div>
-    <h2 id="results-headline">Your Tridoshic Blueprint</h2>
-    <div class="constitution-display" id="constitution-display"></div>
-    <div class="dosha-bar-display" id="dosha-bar"></div>
-    <p class="results-blurb" id="results-blurb"></p>
-  </div>
+  <div class="results-content">
 
-  <div class="results-body">
-    <div class="rtabs" id="rtabs"></div>
-    <div id="rtab-panels"></div>
-  </div>
-
-  <div class="results-body">
-    <div class="download-cta">
-      <h3>Root Deeper. Rise Higher. Flourish.</h3>
-      <p>Your personalised OJAS 35-day program is built from your exact doshic blueprint — day-by-day rituals, meals, herbs, skin protocols and fitness, all aligned to your constitution.</p>
-      <button class="cta-btn" onclick="openFullProgram()">
-        Open Full Program <span class="arrow">→</span>
-      </button>
+    <!-- ══ CONSTITUTION HEADER ══ -->
+    <div id="constitution-header" style="text-align:center;padding:40px 24px 28px;border-bottom:1px solid rgba(75,191,133,.1);">
+      <div style="font-size:.6rem;letter-spacing:.35em;color:var(--bloom);text-transform:uppercase;margin-bottom:10px;">Your Tridoshic Constitution</div>
+      <h2 id="constitution-title" style="font-family:Playfair Display,serif;font-size:1.8rem;font-weight:400;color:var(--cream);margin-bottom:6px;">—</h2>
+      <p id="constitution-tagline" style="font-size:.78rem;color:var(--muted);font-weight:300;line-height:1.7;max-width:480px;margin:0 auto;"></p>
     </div>
+
+    <!-- ══ DOSHA BARS ══ -->
+    <div style="padding:28px 24px;max-width:600px;margin:0 auto;">
+      <div style="font-size:.57rem;letter-spacing:.3em;color:var(--bloom);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        Constitutional Split <span style="flex:1;height:1px;background:rgba(75,191,133,.12);display:block;"></span>
+      </div>
+      <div id="dosha-bars"></div>
+    </div>
+
+    <!-- ══ DOSHA MEANING CARDS ══ -->
+    <div id="dosha-meaning" style="padding:0 24px 28px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:12px;"></div>
+
+    <!-- ══ RESEARCH CONTEXT ══ -->
+    <div style="padding:0 24px 28px;max-width:600px;margin:0 auto;">
+      <div style="font-size:.57rem;letter-spacing:.3em;color:var(--bloom);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        What Research Says <span style="flex:1;height:1px;background:rgba(75,191,133,.12);display:block;"></span>
+      </div>
+      <div id="research-context" style="padding:16px;border:1px solid rgba(75,191,133,.15);background:rgba(10,26,14,.4);font-size:.72rem;color:var(--muted);line-height:1.85;font-weight:300;"></div>
+    </div>
+
+    <!-- ══ YOUR ANSWERS AUDIT ══ -->
+    <div style="padding:0 24px 28px;max-width:600px;margin:0 auto;">
+      <div style="font-size:.57rem;letter-spacing:.3em;color:var(--bloom);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+        Your Answers <span style="flex:1;height:1px;background:rgba(75,191,133,.12);display:block;"></span>
+      </div>
+      <p style="font-size:.68rem;color:var(--muted);line-height:1.7;font-weight:300;margin-bottom:14px;">
+        Every answer mapped to your constitution. Add a personal note to any response — these clarifiers become part of your program brief.
+      </p>
+
+      <!-- Phase filter tabs -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="audit-tabs">
+        <button onclick="showAuditPhase('all')" class="audit-tab active" data-phase="all">All</button>
+        <button onclick="showAuditPhase(1)" class="audit-tab" data-phase="1">Physical</button>
+        <button onclick="showAuditPhase(2)" class="audit-tab" data-phase="2">Mind & Emotions</button>
+        <button onclick="showAuditPhase(3)" class="audit-tab" data-phase="3">Digestion & Energy</button>
+        <button onclick="showAuditPhase(4)" class="audit-tab" data-phase="4">Skin, Hair & Body</button>
+        <button onclick="showAuditPhase(5)" class="audit-tab" data-phase="5">Final Details</button>
+      </div>
+
+      <div id="answers-audit"></div>
+    </div>
+
+    <!-- ══ PRAKRUTI NOTE ══ -->
+    <div id="prakruti-note" style="padding:0 24px 28px;max-width:600px;margin:0 auto;display:none;">
+      <div style="padding:14px 16px;border-left:3px solid var(--pollen);background:rgba(237,184,48,.06);font-size:.72rem;color:var(--muted);line-height:1.8;">
+        <strong style="color:var(--cream);">Prakruti vs. Vikruti</strong><br>
+        <span id="prakruti-text"></span>
+      </div>
+    </div>
+
+    <!-- ══ SAVE & BUILD CTA ══ -->
+    <div style="padding:0 24px 48px;max-width:600px;margin:0 auto;">
+      <div style="padding:24px;border:1px solid rgba(75,191,133,.2);background:linear-gradient(135deg,rgba(10,26,14,.9),rgba(20,50,28,.7));">
+        <h3 style="font-family:Playfair Display,serif;font-size:1.1rem;font-weight:400;color:var(--cream);margin-bottom:6px;">
+          Ready to build your personalized OJAS program?
+        </h3>
+        <p style="font-size:.7rem;color:var(--muted);line-height:1.7;font-weight:300;margin-bottom:18px;">
+          Save your results, add any clarifiers above, then connect your AI to generate your 35-day protocol built specifically around your constitution, goals, and lifestyle.
+        </p>
+        <div id="results-save-area">
+          <!-- If logged in: show "Build My Program" button -->
+          <!-- If not logged in: show signup form inline -->
+          <div id="results-auth-check" style="font-size:.72rem;color:var(--muted);">Checking your account...</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 // QUIZ DATA — 50 Questions, 5 Phases
@@ -1237,12 +1309,13 @@ var quizData = {
     },
     {
       id: 17,
-      text: "What best describes your relationship with money and spending?",
+      text: "How does your body typically recover from illness or injury?",
       layout: "list",
+      hint: "Think about your natural pattern, not the worst case — your typical recovery.",
       options: [
-        {val:"v", text:"Impulsive spending — I spend on whims, gifts, experiences; not a natural saver; money slips through my hands"},
-        {val:"p", text:"Purposeful spender — I spend generously on what I value (quality, causes, experiences) but track it with intention"},
-        {val:"k", text:"Natural accumulator — I save easily, rarely spend impulsively, accumulate wealth and possessions naturally"}
+        {val:"v", label:"Vata", text:"Variable and unpredictable — sometimes quick, sometimes prolonged; prone to complications or lingering symptoms"},
+        {val:"p", label:"Pitta", text:"Fast and acute — high fever, intense symptoms but resolved quickly; I heal efficiently when I rest properly"},
+        {val:"k", label:"Kapha", text:"Slow but thorough — mild symptoms that drag on; takes time but I rarely have serious complications"}
       ]
     },
     {
@@ -1330,12 +1403,13 @@ var quizData = {
     },
     {
       id: 26,
-      text: "Describe your natural exercise preferences:",
+      text: "What best describes your natural voice and speech pattern?",
       layout: "list",
+      hint: "Your default way of speaking — not when you're performing or presenting.",
       options: [
-        {val:"v", text:"Variety and lightness — I love dance, yoga, walking, swimming; I prefer activities I can do spontaneously"},
-        {val:"p", text:"Intensity and competition — I gravitate toward sport, weightlifting, running; I want to push limits and win"},
-        {val:"k", text:"Steady endurance — I prefer hiking, cycling, swimming long distances, consistent moderate effort over time"}
+        {val:"v", label:"Vata", text:"Quick, variable, enthusiastic — I talk fast, jump topics, sometimes trail off or change direction mid-sentence"},
+        {val:"p", label:"Pitta", text:"Sharp, articulate, direct — I speak with clarity and conviction; can sound intense or pointed, especially under pressure"},
+        {val:"k", label:"Kapha", text:"Slow, melodious, measured — I take my time, choose words carefully; people tell me I have a calming or steady voice"}
       ]
     },
     {
@@ -1383,13 +1457,13 @@ var quizData = {
   phase4: [
     {
       id: 31,
-      text: "What are your primary skin concerns?",
+      text: "How does your body respond to skipping a meal or extended fasting?",
       layout: "list",
-      hint: "Select the option that most closely matches your dominant skin pattern",
+      hint: "Imagine you genuinely missed a meal — not intentionally fasting, just forgot or couldn't eat.",
       options: [
-        {val:"v", text:"Dryness, sensitivity, fine lines, flakiness, rough patches, loss of elasticity — dehydration and dryness are the pattern"},
-        {val:"p", text:"Inflammation, breakouts, redness, rosacea, sensitivity to products, burning sensations, hyperpigmentation after healing"},
-        {val:"k", text:"Oiliness, blackheads, enlarged pores, congestion, slow-healing spots, dull complexion, excess sebum production"}
+        {val:"v", label:"Vata", text:"Anxious, scattered, light-headed — I lose focus quickly and feel ungrounded; I need to eat regularly or I fall apart"},
+        {val:"p", label:"Pitta", text:"Intensely irritable and sharp — I get a headache, feel hot, become short-tempered; people notice when I haven't eaten"},
+        {val:"k", label:"Kapha", text:"Surprisingly comfortable — I can skip meals without much distress; hunger is mild and easy to ignore for hours"}
       ]
     },
     {
@@ -1424,12 +1498,13 @@ var quizData = {
     },
     {
       id: 35,
-      text: "What best describes your scalp and hair health challenges?",
+      text: "What describes your hands and feet in their natural state?",
       layout: "list",
+      hint: "Not after exercise or in extreme weather — your baseline.",
       options: [
-        {val:"v", text:"Dry scalp, dandruff (dry flakes), thinning, hair loss from stress, brittle hair that breaks easily"},
-        {val:"p", text:"Sensitive scalp, premature greying, hair loss with inflammation or stress, oily scalp with fine strands"},
-        {val:"k", text:"Excessively oily scalp, heavy dandruff (oily flakes), slow hair loss, scalp congestion or buildup"}
+        {val:"v", label:"Vata", text:"Often cold, dry, and variable — my hands and feet are frequently chilly regardless of the season; skin cracks easily"},
+        {val:"p", label:"Pitta", text:"Warm to hot, sometimes sweaty — my hands feel warm most of the time; feet can get uncomfortably hot at night"},
+        {val:"k", label:"Kapha", text:"Cool, stable, and slightly damp — not cold like Vata but not warm either; steady temperature, possibly slightly moist"}
       ]
     },
     {
@@ -1491,7 +1566,7 @@ var quizData = {
 var answers = {}; // {questionId: 'v'|'p'|'k'}
 var intents = []; // selected lifestyle intent areas
 var currentPhase = 1;
-var totalQuestions = 50;
+var totalQuestions = 48;
 
 // ══════════════════════════════════════════════════════════════
 // RENDER QUIZ QUESTIONS
@@ -1566,213 +1641,13 @@ function toggleIntent(el) {
     el.classList.add('selected');
     if (intents.indexOf(intent) === -1) intents.push(intent);
   }
-  renderFollowups();
 }
-
 // ══════════════════════════════════════════════════════════════
 // FOLLOW-UP QUESTIONS — one per intent area, captures specific goals
 // Stored in goalProfile{} and saved to Supabase profiles.goal_profile
 // Editable later from the dashboard "Goals & Focus" section
 // ══════════════════════════════════════════════════════════════
-var goalProfile = {};
 
-var followupData = {
-  nutrition: {
-    icon: '🍽️', label: 'Nutrition & Meals',
-    question: 'What\'s your biggest challenge or goal with food right now?',
-    options: [
-      {val:'structure', text:'I need structure — meal timing, what to eat when, removing decision fatigue'},
-      {val:'weight', text:'Weight management — gaining, losing, or recomposition aligned with my dosha'},
-      {val:'digestive', text:'Digestive symptoms — bloating, irregularity, food sensitivities I want to address'},
-      {val:'energy', text:'Sustained energy — avoiding crashes, eating for stable focus throughout the day'},
-      {val:'restriction', text:'Working within restrictions — allergies, intolerances, or an existing diet (vegan, gluten-free, etc.)'}
-    ],
-    note: 'This shapes your meal plan emphasis — for example, a digestive focus prioritises CCF tea and Agni-building foods, while energy focus prioritises protein timing and blood sugar stability.'
-  },
-  fitness: {
-    icon: '💪', label: 'Fitness & Movement',
-    question: 'What does your current relationship with exercise look like?',
-    options: [
-      {val:'beginner', text:'Starting fresh — I want simple, sustainable movement without overwhelm'},
-      {val:'rebuilding', text:'Rebuilding — returning after injury, illness, or a long break'},
-      {val:'optimising', text:'Optimising — I train regularly and want to refine my split and recovery for my dosha'},
-      {val:'recomp', text:'Body composition focus — building muscle, losing fat, or both'},
-      {val:'mobility', text:'Mobility & longevity — less about performance, more about moving well for life'}
-    ],
-    note: 'This determines whether your fitness section emphasises gentle consistency, structured progression, or performance optimisation.'
-  },
-  skin: {
-    icon: '✨', label: 'Skin Health',
-    question: 'What\'s the primary skin concern you want this program to address?',
-    options: [
-      {val:'acne', text:'Active breakouts — face, back, or body acne I want to clear'},
-      {val:'aging', text:'Aging & texture — fine lines, elasticity, dullness, evening out texture'},
-      {val:'pigmentation', text:'Pigmentation & scarring — dark spots, post-acne marks, uneven tone'},
-      {val:'sensitivity', text:'Sensitivity & redness — reactive skin, rosacea-type flares, irritation'},
-      {val:'maintenance', text:'Maintenance — my skin is generally fine, I want a simple dosha-aligned routine'}
-    ],
-    note: 'Your skin protocol will lead with whichever concern you select — for example active acne shifts product recommendations toward antibacterial and anti-inflammatory ingredients first.'
-  },
-  hair: {
-    icon: '💆', label: 'Hair Care',
-    question: 'What\'s your main hair or scalp concern?',
-    options: [
-      {val:'loss', text:'Hair loss or thinning — including specific areas or patterns I\'m concerned about'},
-      {val:'texture', text:'Texture & frizz — managing dryness, frizz, or damage'},
-      {val:'scalp', text:'Scalp health — dandruff, oiliness, sensitivity, or buildup'},
-      {val:'growth', text:'Growth & length — supporting healthy growth and reducing breakage'},
-      {val:'maintenance', text:'General maintenance — my hair is healthy, I want a simple dosha-aligned routine'}
-    ],
-    note: 'A hair loss focus will lead with scalp treatment protocols and timeline expectations; texture focus leads with oils and wash frequency adjustments.'
-  },
-  supplements: {
-    icon: '🌿', label: 'Herbs & Supplements',
-    question: 'How do you want to approach herbs and supplements?',
-    options: [
-      {val:'minimal', text:'Minimal & foundational — just the core 2-3 things that matter most for my dosha'},
-      {val:'comprehensive', text:'Comprehensive stack — I want a full daily protocol with timing and rationale'},
-      {val:'specific', text:'Targeting something specific — a condition, symptom, or goal I want herbs to support'},
-      {val:'caution', text:'Cautious — I\'m currently on medication or have sensitivities, keep recommendations conservative'},
-      {val:'existing', text:'I already take supplements — help me evaluate and refine what I\'m using'}
-    ],
-    note: 'A cautious or medicated selection ensures ZenZo flags potential herb-drug interaction considerations and recommends consulting your physician before adding anything new.'
-  },
-  sleep: {
-    icon: '🌙', label: 'Sleep & Recovery',
-    question: 'What\'s your biggest sleep challenge?',
-    options: [
-      {val:'falling', text:'Falling asleep — my mind races or I feel wired at bedtime'},
-      {val:'staying', text:'Staying asleep — I wake during the night and struggle to return to sleep'},
-      {val:'waking', text:'Waking unrefreshed — I sleep enough hours but don\'t feel rested'},
-      {val:'schedule', text:'Inconsistent schedule — my bedtime varies a lot and I want more rhythm'},
-      {val:'optimising', text:'Generally fine — I want to optimise an already-decent sleep routine further'}
-    ],
-    note: 'Falling-asleep issues lead with evening Pitta-cooling and nervous system practices; staying-asleep issues lead with Vata-grounding and blood-sugar-stable dinners.'
-  },
-  stress: {
-    icon: '🧘', label: 'Stress & Mind',
-    question: 'What would be most valuable for your mental and emotional wellbeing right now?',
-    options: [
-      {val:'anxiety', text:'Managing anxiety or racing thoughts — calming an overactive mind'},
-      {val:'anger', text:'Managing frustration or irritability — cooling reactive responses'},
-      {val:'motivation', text:'Building motivation — overcoming inertia, procrastination, or low drive'},
-      {val:'focus', text:'Improving focus & clarity — reducing mental fog or scatter'},
-      {val:'practice', text:'Building a consistent practice — meditation or breathwork I can actually stick to'}
-    ],
-    note: 'This determines which meditation and pranayama techniques are emphasised first — cooling practices for anxiety/anger, activating practices for motivation, grounding practices for focus.'
-  },
-  digestion: {
-    icon: '🔥', label: 'Digestion & Gut',
-    question: 'What digestive pattern do you experience most often?',
-    options: [
-      {val:'irregular', text:'Irregularity — unpredictable bowel movements, gas, bloating'},
-      {val:'acidity', text:'Acidity & heat — heartburn, reflux, sensitivity to spicy or acidic foods'},
-      {val:'sluggish', text:'Sluggishness — heaviness after eating, slow digestion, low appetite'},
-      {val:'sensitivity', text:'Food sensitivities — specific foods consistently cause issues'},
-      {val:'cleanse', text:'I want a structured reset — interested in a guided cleanse protocol'}
-    ],
-    note: 'Your digestion section leads with the matching Agni-balancing protocol — Vishama (irregular), Tikshna (acidity), or Manda (sluggish) Agni guidance.'
-  },
-  oral: {
-    icon: '😁', label: 'Oral Health',
-    question: 'What\'s your primary oral health focus?',
-    options: [
-      {val:'gums', text:'Gum health — sensitivity, bleeding, recession, or gingivitis concerns'},
-      {val:'routine', text:'Building a routine — I want to start oil pulling, tongue scraping, etc. from scratch'},
-      {val:'breath', text:'Breath & oral microbiome — addressing chronic bad breath or oral bacteria balance'},
-      {val:'whitening', text:'Whitening & aesthetics — natural approaches to a brighter smile'},
-      {val:'maintenance', text:'Maintenance — my oral health is good, I want the dosha-aligned daily ritual'}
-    ],
-    note: 'Gum-focused selections lead with Pitta-specific anti-inflammatory protocols (like Parodontax-based routines); routine-building selections get a gentler, staged introduction.'
-  },
-  energy: {
-    icon: '⚡', label: 'Energy & Vitality',
-    question: 'How would you describe your energy challenges?',
-    options: [
-      {val:'crashes', text:'Crashes — I have energy then hit a wall, especially afternoon'},
-      {val:'morning', text:'Morning sluggishness — hard to get going, low motivation early in the day'},
-      {val:'burnout', text:'Burnout risk — I push hard and worry about sustainability'},
-      {val:'chronic', text:'Chronic fatigue — persistent low energy regardless of sleep or diet'},
-      {val:'performance', text:'Performance — I feel good but want to optimise for peak output'}
-    ],
-    note: 'Chronic fatigue responses include a note recommending bloodwork with a physician to rule out underlying causes before herbal intervention — Ojas-building practices support but don\'t replace medical evaluation.'
-  },
-  relationships: {
-    icon: '🤝', label: 'Relationships & Work',
-    question: 'Where would understanding your dosha be most useful in your relationships or work?',
-    options: [
-      {val:'conflict', text:'Conflict patterns — understanding how I react under tension and with whom'},
-      {val:'communication', text:'Communication style — adapting how I express myself with different people'},
-      {val:'boundaries', text:'Boundaries — I tend to overcommit, overgive, or struggle to say no'},
-      {val:'career', text:'Career alignment — understanding what work environments suit my constitution'},
-      {val:'general', text:'General self-understanding — curious how this applies, no specific issue'}
-    ],
-    note: 'This is reflective and educational content — it helps you understand patterns, not therapy or relationship counselling, which should come from a qualified professional if needed.'
-  },
-  cleanse: {
-    icon: '🫧', label: 'Cleanse & Detox',
-    question: 'What\'s your experience level with cleansing or detox practices?',
-    options: [
-      {val:'new', text:'New to this — I\'ve never done a structured cleanse and want to understand what\'s involved'},
-      {val:'seasonal', text:'Interested in seasonal rhythm — aligning with the Ayurvedic calendar a few times a year'},
-      {val:'reset', text:'I want a specific reset — feeling sluggish/toxic and want a clear protocol now'},
-      {val:'maintenance', text:'Light daily practices — simple ongoing habits rather than an intensive cleanse'},
-      {val:'medical', text:'I have a health condition — want gentle guidance with medical awareness built in'}
-    ],
-    note: 'The medical-aware option ensures any cleanse guidance includes a clear note to consult your doctor first, particularly around fasting or purgation practices — these can interact with medications and certain conditions.'
-  }
-};
-
-function renderFollowups() {
-  var container = document.getElementById('intent-followups');
-  var cardsEl = document.getElementById('followup-cards');
-  if (!container || !cardsEl) return;
-
-  if (intents.length === 0) {
-    container.style.display = 'none';
-    return;
-  }
-  container.style.display = 'block';
-
-  var html = '';
-  intents.forEach(function(intentKey) {
-    var fu = followupData[intentKey];
-    if (!fu) return;
-    var selected = goalProfile[intentKey];
-    html += '<div class="q-card" style="border-color:rgba(75,191,133,.18);' + (selected ? 'border-color:rgba(75,191,133,.3);' : '') + '">';
-    html += '<div class="q-num" style="display:flex;align-items:center;gap:8px;">' +
-            '<span style="font-size:1rem;">' + fu.icon + '</span> ' + fu.label.toUpperCase() + '</div>';
-    html += '<div class="q-text">' + fu.question + '</div>';
-    html += '<div class="options">';
-    fu.options.forEach(function(opt, i) {
-      var labels = ['A','B','C','D','E'];
-      var isSelected = selected === opt.val;
-      html += '<button class="opt' + (isSelected ? ' selected-beginner' : '') + '" ' +
-              'data-goal="' + intentKey + '" data-val="' + opt.val + '" onclick="selectGoalOpt(this)">';
-      html += '<div class="opt-dot"></div><span class="opt-label">' + labels[i] + '</span>';
-      html += '<span class="opt-text">' + opt.text + '</span>';
-      html += '</button>';
-    });
-    html += '</div>';
-    html += '<div class="q-hint" style="margin-top:10px;margin-bottom:0;">' + fu.note + '</div>';
-    html += '</div>';
-  });
-
-  cardsEl.innerHTML = html;
-}
-
-function selectGoalOpt(el) {
-  var key = el.dataset.goal;
-  var val = el.dataset.val;
-  goalProfile[key] = val;
-
-  // Update visual state for this question group only
-  var parent = el.closest('.options');
-  parent.querySelectorAll('.opt').forEach(function(o) {
-    o.classList.remove('selected-beginner');
-  });
-  el.classList.add('selected-beginner');
-}
 
 // ══════════════════════════════════════════════════════════════
 // NAVIGATION
@@ -1835,8 +1710,12 @@ function retakeQuiz() {
 // CALCULATE RESULTS
 // ══════════════════════════════════════════════════════════════
 function calculateResults() {
+  // ── Score tallying ──
   var scores = {v: 0, p: 0, k: 0};
-  Object.values(answers).forEach(function(val) {
+  Object.entries(answers).forEach(function(entry) {
+    var qnum = parseInt(entry[0]);
+    var val = entry[1];
+    // Only count V/P/K votes (Q47/Q48 use non-dosha values)
     if (scores[val] !== undefined) scores[val]++;
   });
 
@@ -1847,30 +1726,329 @@ function calculateResults() {
     k: Math.round((scores.k / total) * 100)
   };
 
-  // Determine primary, secondary, tertiary
+  // Ensure sums to 100
+  var diff = 100 - (pct.v + pct.p + pct.k);
   var ranked = [{d:'p',s:pct.p},{d:'k',s:pct.k},{d:'v',s:pct.v}]
-    .sort(function(a,b){return b.s - a.s;});
+    .sort(function(a,b){ return b.s - a.s; });
+  pct[ranked[0].d] += diff;
 
   var primary = ranked[0];
   var secondary = ranked[1];
   var tertiary = ranked[2];
 
-  // Show results
+  // Show results section
   document.getElementById('quiz-section').classList.remove('active');
-  document.getElementById('results-section').classList.add('active');
+  document.getElementById('results-section').style.display = 'block';
 
-  buildResultsPage(primary, secondary, tertiary, pct);
-  // Save to Supabase if logged in
-  if (typeof saveResultsIfLoggedIn === 'function') {
-    saveResultsIfLoggedIn(primary.d, secondary.d, tertiary.d, pct, answers, intents);
-    localStorage.setItem('ojas_quiz_complete', '1');
-    localStorage.setItem('ojas_quiz_results', JSON.stringify({
-      primary: primary.d, secondary: secondary.d, tertiary: tertiary.d,
-      pct: pct, answers: answers, intents: intents
-    }));
-  }
+  // ── Constitution title ──
+  var doshaNames = {p:'Pitta', k:'Kapha', v:'Vata'};
+  var doshaColors = {p:'var(--fire)', k:'var(--bloom)', v:'var(--vata)'};
+  var constitutionLabel = doshaNames[primary.d] + '-' + doshaNames[secondary.d] + '-' + doshaNames[tertiary.d];
+  document.getElementById('constitution-title').textContent = constitutionLabel;
+
+  var taglines = {
+    p: 'Fire and water in union — sharp intelligence, strong digestion, a natural leader whose greatest practice is learning to cool without extinguishing.',
+    k: 'Earth and water in union — steady love, deep resilience, the nourisher of others whose greatest practice is learning to move without losing groundedness.',
+    v: 'Space and air in union — creative brilliance, intuitive depth, a visionary whose greatest practice is learning to anchor without losing flight.'
+  };
+  document.getElementById('constitution-tagline').textContent = taglines[primary.d];
+
+  // ── Dosha bars ──
+  var barsEl = document.getElementById('dosha-bars');
+  var doshaOrder = [primary, secondary, tertiary];
+  var barsHtml = '';
+  doshaOrder.forEach(function(d) {
+    var pctVal = pct[d.d];
+    var name = doshaNames[d.d];
+    var rank = d === primary ? ' (Dominant)' : d === secondary ? ' (Secondary)' : ' (Tertiary)';
+    barsHtml += '<div class="dosha-bar-row">';
+    barsHtml += '<div class="dosha-bar-label">';
+    barsHtml += '<span class="dosha-bar-name">' + name + '<span style="font-size:.55rem;font-weight:300;color:var(--muted);">' + rank + '</span></span>';
+    barsHtml += '<span class="dosha-bar-pct" style="color:' + doshaColors[d.d] + '">' + pctVal + '%</span>';
+    barsHtml += '</div>';
+    barsHtml += '<div class="dosha-bar-track"><div class="dosha-bar-fill ' + doshaNames[d.d].toLowerCase() + '" style="width:0%" data-target="' + pctVal + '%"></div></div>';
+    barsHtml += '</div>';
+  });
+  barsEl.innerHTML = barsHtml;
+  setTimeout(function() {
+    barsEl.querySelectorAll('.dosha-bar-fill').forEach(function(bar) {
+      bar.style.width = bar.dataset.target;
+    });
+  }, 100);
+
+  // ── Dosha meaning cards ──
+  var meanings = {
+    p: {
+      title: 'Pitta — Fire & Water',
+      color: 'primary',
+      traits: 'Sharp intellect, strong metabolism, intense focus, natural leadership, competitive drive.',
+      in_balance: 'Radiant skin, keen digestion, clear vision, warm confidence, decisive intelligence.',
+      out_of_balance: 'Inflammation, skin flares (acne, redness), irritability, perfectionism, heartburn.',
+      ayurveda: 'Pitta governs Agni — the digestive fire — and is the seat of transformation in the body. Charaka Samhita identifies it as the root of metabolism, hormonal activity, and the discriminative intelligence (Buddhi).',
+      research: 'Constitutional typology research (Prasher et al., 2008; Ghodke et al., 2011) associates Pitta prakruti with higher metabolic rate, elevated liver enzyme activity, and Type A behavioral patterns — consistent with the classical description of sharp, intense constitution.'
+    },
+    k: {
+      title: 'Kapha — Earth & Water',
+      color: 'secondary',
+      traits: 'Deep calm, physical endurance, loyal relationships, steady memory, natural compassion.',
+      in_balance: 'Lustrous skin, strong immunity, deep sleep, emotional groundedness, physical strength.',
+      out_of_balance: 'Weight gain, congestion, lethargy, over-attachment, sluggish digestion.',
+      ayurveda: 'Kapha governs structure, lubrication, and immunity. The Ashtanga Hridayam describes it as the sustainer of the body — providing density to bones, moisture to tissues, and the stability of Ojas (vital essence).',
+      research: 'Studies (Mahalle et al., 2012; Dey & Pahwa, 2014) show Kapha types trend toward higher BMI, lower thyroid activity, and parasympathetic nervous system dominance — matching classical descriptions of slow metabolism, anabolic tendency, and emotional steadiness.'
+    },
+    v: {
+      title: 'Vata — Space & Air',
+      color: 'tertiary',
+      traits: 'Creative intelligence, quick thinking, adaptability, enthusiasm for novelty, intuitive leaps.',
+      in_balance: 'Energetic, creative, joyful, flexible, communicative, spiritually attuned.',
+      out_of_balance: 'Anxiety, insomnia, dry skin/hair, irregular digestion, scattered focus, joint discomfort.',
+      ayurveda: 'Vata is the primary force — it initiates all movement in the body and mind. Charaka declares Vata the leader of all Doshas: when Vata is balanced, Pitta and Kapha follow; when disturbed, it displaces both.',
+      research: 'Genetic association studies (Juyal et al., 2012) have identified polymorphisms in EGLN1 and PPARA genes correlating with Vata-dominant prakruti, particularly relating to nervous system sensitivity and catabolic metabolism.'
+    }
+  };
+
+  var meaningEl = document.getElementById('dosha-meaning');
+  var meaningHtml = '';
+  doshaOrder.forEach(function(d) {
+    var m = meanings[d.d];
+    meaningHtml += '<div class="dosha-meaning-card ' + (d === primary ? 'primary' : d === secondary ? 'secondary' : 'tertiary') + '">';
+    meaningHtml += '<div style="font-size:.62rem;letter-spacing:.15em;color:' + doshaColors[d.d] + ';text-transform:uppercase;margin-bottom:6px;">' + (d === primary ? '★ ' : '') + m.title + '</div>';
+    meaningHtml += '<div style="font-size:.7rem;color:var(--cream);margin-bottom:8px;line-height:1.6;"><strong>When balanced:</strong> ' + m.in_balance + '</div>';
+    meaningHtml += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:8px;line-height:1.6;"><strong style="color:var(--cream);">When elevated:</strong> ' + m.out_of_balance + '</div>';
+    meaningHtml += '<div style="font-size:.67rem;color:var(--muted);line-height:1.7;padding-top:8px;border-top:1px solid rgba(75,191,133,.08);">' + m.ayurveda + '</div>';
+    meaningHtml += '</div>';
+  });
+  meaningEl.innerHTML = meaningHtml;
+
+  // ── Research context ──
+  var primaryResearch = meanings[primary.d].research;
+  var secondaryResearch = meanings[secondary.d].research;
+  document.getElementById('research-context').innerHTML =
+    '<strong style="color:var(--cream);">On your dominant Dosha (' + doshaNames[primary.d] + '):</strong> ' + primaryResearch +
+    '<br><br>' +
+    '<strong style="color:var(--cream);">On your secondary (' + doshaNames[secondary.d] + '):</strong> ' + secondaryResearch +
+    '<br><br>' +
+    '<span style="font-size:.65rem;opacity:.7;">References: Prasher et al. (2008) PMID 18776909 · Ghodke et al. (2011) PMID 22557901 · Mahalle et al. (2012) · Juyal et al. (2012) PMID 22279521. These studies used Ayurvedic constitutional classification with genetic and metabolic markers, offering a bridge between traditional prakruti typology and modern biomarker research.</span>';
+
+  // ── Answers audit ──
+  renderAnswerAudit(answers, pct, doshaNames, doshaColors);
+
+  // ── Auth check for CTA ──
+  renderResultsCTA();
+
+  // ── Save to localStorage ──
+  localStorage.setItem('ojas_quiz_complete', '1');
+  localStorage.setItem('ojas_quiz_results', JSON.stringify({
+    primary: primary.d, secondary: secondary.d, tertiary: tertiary.d,
+    pct: pct, answers: answers, intents: intents,
+    q47: answers[47], q48: answers[48]
+  }));
+
+  // ── Save to Supabase if logged in ──
+  if (currentOjasUser) saveQuizToSupabase(currentOjasUser.id);
+
   window.scrollTo(0, 0);
 }
+
+// ── ANSWERS AUDIT RENDERING ──
+var answerClarifiers = {};
+var quizQuestionsFlat = {};
+
+function buildQuizFlat() {
+  if (Object.keys(quizQuestionsFlat).length > 0) return;
+  var phases = [quizData.phase1, quizData.phase2, quizData.phase3, quizData.phase4];
+  phases.forEach(function(phase, pi) {
+    phase.forEach(function(q) {
+      quizQuestionsFlat[q.id] = {text: q.text, phase: pi + 1, options: q.options};
+    });
+  });
+  // Add Phase 5 static questions
+  var p5qs = [
+    {id:41, text:"When you have unstructured free time, what do you naturally gravitate toward?", phase:5,
+     options:[{val:'v',text:"Starting something new"},{val:'p',text:"Working toward a goal"},{val:'k',text:"Relaxing with comfort"}]},
+    {id:42, text:"How does your body typically respond to caffeine?", phase:5,
+     options:[{val:'v',text:"Strongly — jittery or anxious"},{val:'p',text:"It sharpens me"},{val:'k',text:"I barely notice it"}]},
+    {id:43, text:"How do you naturally respond when plans change unexpectedly?", phase:5,
+     options:[{val:'v',text:"I can spiral"},{val:'p',text:"I get frustrated"},{val:'k',text:"I adapt slowly but steadily"}]},
+    {id:44, text:"What is your body's typical reaction to travel or time zone changes?", phase:5,
+     options:[{val:'v',text:"Hard hit"},{val:'p',text:"Irritable adjustment"},{val:'k',text:"Minimal impact"}]},
+    {id:45, text:"When you are at your best, what do people most consistently notice about you?", phase:5,
+     options:[{val:'v',text:"My energy and ideas"},{val:'p',text:"My clarity and drive"},{val:'k',text:"My steadiness and warmth"}]},
+    {id:46, text:"How does your mind typically behave when you are trying to fall asleep?", phase:5,
+     options:[{val:'v',text:"Racing"},{val:'p',text:"Problem-solving"},{val:'k',text:"Quiet"}]},
+    {id:47, text:"How would you describe your current experience with Ayurveda and wellness practices?", phase:5,
+     options:[{val:'beginner',text:"New to all of this"},{val:'intermediate',text:"Some familiarity"},{val:'advanced',text:"Practiced"}]},
+    {id:48, text:"What is driving you to do this now?", phase:5,
+     options:[{val:'prevent',text:"Prevention"},{val:'heal',text:"Healing"},{val:'optimise',text:"Optimisation"},{val:'transform',text:"Transformation"}]}
+  ];
+  p5qs.forEach(function(q) { quizQuestionsFlat[q.id] = q; });
+}
+
+var currentAuditPhase = 'all';
+
+function showAuditPhase(phase) {
+  currentAuditPhase = phase;
+  document.querySelectorAll('.audit-tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.phase == phase);
+  });
+  var items = document.querySelectorAll('.audit-item');
+  items.forEach(function(item) {
+    var itemPhase = parseInt(item.dataset.phase);
+    item.style.display = (phase === 'all' || itemPhase === phase) ? 'block' : 'none';
+  });
+}
+
+var doshaLabelsFull = {v: 'Vata', p: 'Pitta', k: 'Kapha',
+  beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced',
+  prevent: 'Prevention', heal: 'Healing', optimise: 'Optimisation', transform: 'Transformation'};
+
+function renderAnswerAudit(answers, pct, doshaNames, doshaColors) {
+  buildQuizFlat();
+  var container = document.getElementById('answers-audit');
+  var html = '';
+  var phaseLabels = {1:'Physical', 2:'Mind & Emotions', 3:'Digestion & Energy', 4:'Skin, Hair & Body', 5:'Final Details'};
+
+  for (var qnum = 1; qnum <= 48; qnum++) {
+    var q = quizQuestionsFlat[qnum];
+    if (!q) continue;
+    var selectedVal = answers[qnum];
+    if (!selectedVal) continue;
+
+    var opt = (q.options || []).find(function(o){ return o.val === selectedVal; });
+    var optText = opt ? opt.text : selectedVal;
+    var isDosha = ['v','p','k'].indexOf(selectedVal) > -1;
+    var badgeClass = isDosha ? selectedVal : 'other';
+    var badgeLabel = doshaLabelsFull[selectedVal] || selectedVal;
+    var clarifier = answerClarifiers[qnum] || '';
+
+    html += '<div class="audit-item ' + (clarifier ? 'answered' : '') + '" data-phase="' + q.phase + '" data-q="' + qnum + '">';
+    html += '<div class="audit-q">Q' + qnum + ' · ' + phaseLabels[q.phase] + '</div>';
+    html += '<div class="audit-answer">' + q.text + '</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
+    html += '<span class="audit-dosha-badge ' + badgeClass + '">' + badgeLabel + '</span>';
+    html += '<span style="font-size:.7rem;color:var(--muted);">' + optText + '</span>';
+    html += '</div>';
+    html += '<textarea class="audit-clarifier" rows="1" data-qnum="' + qnum + '"' +
+            ' onchange="saveClarifier(' + qnum + ', this.value)"' +
+            ' oninput="autoExpand(this)"' +
+            ' placeholder="Add personal context for this answer (optional)...">' + clarifier + '</textarea>';
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function saveClarifier(qnum, val) {
+  answerClarifiers[qnum] = val;
+  // Save to localStorage
+  localStorage.setItem('ojas_clarifiers', JSON.stringify(answerClarifiers));
+  // Mark item as answered
+  var item = document.querySelector('.audit-item[data-q="' + qnum + '"]');
+  if (item) item.classList.toggle('answered', val.length > 0);
+  // Debounce save to Supabase
+  clearTimeout(window._clarifierTimer);
+  window._clarifierTimer = setTimeout(saveClarifiersToSupabase, 2000);
+}
+
+function autoExpand(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.max(36, el.scrollHeight) + 'px';
+}
+
+async function saveClarifiersToSupabase() {
+  if (!currentOjasUser) return;
+  try {
+    var supa = getSupa();
+    await supa.from('profiles').update({
+      quiz_clarifiers: answerClarifiers
+    }).eq('id', currentOjasUser.id);
+  } catch(e) {}
+}
+
+function renderResultsCTA() {
+  var area = document.getElementById('results-auth-check');
+  if (currentOjasUser) {
+    area.innerHTML = '<button onclick="window.location.href=\'dashboard.html\'" ' +
+      'style="width:100%;padding:14px;background:linear-gradient(135deg,var(--leaf),var(--bloom));' +
+      'color:var(--cream);border:none;font-family:DM Sans,sans-serif;font-size:.72rem;' +
+      'letter-spacing:.22em;text-transform:uppercase;cursor:pointer;font-weight:500;">' +
+      'Go to My Dashboard → Build My Program ✦</button>';
+  } else {
+    area.innerHTML =
+      '<div style="font-size:.7rem;color:var(--cream);margin-bottom:14px;">' +
+      'Create a free account to save your results and build your program:</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<input type="text" id="r-firstname" placeholder="First name" style="padding:10px 12px;' +
+      'background:rgba(6,13,8,.7);border:1px solid rgba(75,191,133,.18);color:var(--cream);' +
+      'font-family:DM Sans,sans-serif;font-size:.78rem;outline:none;">' +
+      '<input type="text" id="r-lastname" placeholder="Last name" style="padding:10px 12px;' +
+      'background:rgba(6,13,8,.7);border:1px solid rgba(75,191,133,.18);color:var(--cream);' +
+      'font-family:DM Sans,sans-serif;font-size:.78rem;outline:none;"></div>' +
+      '<input type="email" id="r-email" placeholder="Email address" style="width:100%;' +
+      'padding:10px 12px;background:rgba(6,13,8,.7);border:1px solid rgba(75,191,133,.18);' +
+      'color:var(--cream);font-family:DM Sans,sans-serif;font-size:.78rem;outline:none;' +
+      'margin-bottom:10px;display:block;">' +
+      '<input type="password" id="r-password" placeholder="Create password (min. 8 chars)" style="width:100%;' +
+      'padding:10px 12px;background:rgba(6,13,8,.7);border:1px solid rgba(75,191,133,.18);' +
+      'color:var(--cream);font-family:DM Sans,sans-serif;font-size:.78rem;outline:none;' +
+      'margin-bottom:12px;display:block;">' +
+      '<div id="r-msg" style="display:none;padding:8px 12px;margin-bottom:10px;font-size:.7rem;' +
+      'border-left:3px solid;"></div>' +
+      '<button onclick="signUpFromResults()" id="r-btn" ' +
+      'style="width:100%;padding:13px;background:linear-gradient(135deg,var(--leaf),var(--bloom));' +
+      'color:var(--cream);border:none;font-family:DM Sans,sans-serif;font-size:.72rem;' +
+      'letter-spacing:.22em;text-transform:uppercase;cursor:pointer;font-weight:500;margin-bottom:10px;">' +
+      'Save Results & Create Account ✦</button>' +
+      '<div style="text-align:center;font-size:.65rem;color:var(--muted);">' +
+      'Already have an account? <a href="login.html" style="color:var(--bloom);">Sign in →</a></div>';
+  }
+}
+
+async function signUpFromResults() {
+  var firstName = (document.getElementById('r-firstname')||{}).value || '';
+  var lastName = (document.getElementById('r-lastname')||{}).value || '';
+  var email = (document.getElementById('r-email')||{}).value || '';
+  var password = (document.getElementById('r-password')||{}).value || '';
+  var msgEl = document.getElementById('r-msg');
+  var btn = document.getElementById('r-btn');
+
+  if (!firstName.trim() || !email.trim() || !password) {
+    msgEl.style.display='block'; msgEl.style.borderColor='#E07070';
+    msgEl.style.color='#F09090'; msgEl.style.background='rgba(224,85,85,.08)';
+    msgEl.textContent='Please fill in all fields.'; return;
+  }
+  if (password.length < 8) {
+    msgEl.style.display='block'; msgEl.style.borderColor='#E07070';
+    msgEl.style.color='#F09090'; msgEl.style.background='rgba(224,85,85,.08)';
+    msgEl.textContent='Password must be at least 8 characters.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  try {
+    var supa = getSupa();
+    var result = await supa.auth.signUp({
+      email: email, password: password,
+      options: {data: {full_name: firstName.trim()+' '+lastName.trim(), first_name: firstName.trim()}}
+    });
+    if (result.error) {
+      btn.disabled=false; btn.textContent='Save Results & Create Account ✦';
+      msgEl.style.display='block'; msgEl.style.borderColor='#E07070';
+      msgEl.style.color='#F09090'; msgEl.style.background='rgba(224,85,85,.08)';
+      msgEl.textContent = result.error.message.includes('already registered')
+        ? 'Email already has an account — sign in instead.' : result.error.message;
+      return;
+    }
+    currentOjasUser = result.data.user;
+    await saveQuizToSupabase(currentOjasUser.id);
+    msgEl.style.display='block'; msgEl.style.borderColor='var(--bloom)';
+    msgEl.style.color='var(--bloom)'; msgEl.style.background='rgba(75,191,133,.07)';
+    msgEl.textContent='✓ Account created! Redirecting to your dashboard...';
+    setTimeout(function(){ window.location.href='dashboard.html'; }, 1500);
+  } catch(e) {
+    btn.disabled=false; btn.textContent='Save Results & Create Account ✦';
+    msgEl.style.display='block'; msgEl.textContent='Connection error. Please try again.';
+  }
+}
+
 
 // ══════════════════════════════════════════════════════════════
 // BUILD RESULTS PAGE
@@ -1880,118 +2058,12 @@ var doshaElements = {p:'Fire + Water', k:'Earth + Water', v:'Space + Air'};
 var doshaColors = {p:'var(--fire)', k:'var(--sage)', v:'var(--vata)'};
 var doshaCssClass = {p:'cd-primary', k:'cd-secondary', v:'cd-tertiary'};
 
-function buildResultsPage(primary, secondary, tertiary, pct) {
-  var P = primary.d, S = secondary.d, T = tertiary.d;
-  var Pn = doshaNames[P], Sn = doshaNames[S], Tn = doshaNames[T];
-
-  // Headline
-  document.getElementById('results-headline').textContent =
-    'You are ' + Pn + '-' + Sn + '-' + Tn;
-
-  // Constitution blocks
-  var cdHtml = '';
-  [[P,primary.s,'Dominant','cd-primary'], [S,secondary.s,'Secondary','cd-secondary'], [T,tertiary.s,'Tertiary','cd-tertiary']].forEach(function(arr) {
-    cdHtml += '<div class="cd-block ' + arr[3] + '">';
-    cdHtml += '<span class="cd-pct">' + arr[1] + '%</span>';
-    cdHtml += '<span class="cd-name">' + doshaNames[arr[0]] + '</span>';
-    cdHtml += '<span class="cd-role">' + arr[2] + '</span>';
-    cdHtml += '</div>';
-  });
-  document.getElementById('constitution-display').innerHTML = cdHtml;
-
-  // Dosha bar
-  var barHtml = '';
-  [[P,primary.s],[S,secondary.s],[T,tertiary.s]].forEach(function(arr) {
-    barHtml += '<div class="dbd-' + arr[0] + '" style="width:' + arr[1] + '%"></div>';
-  });
-  document.getElementById('dosha-bar').innerHTML = barHtml;
-
-  // Blurb
-  document.getElementById('results-blurb').textContent = getDoshaBlurb(P, S, T);
-
-  // Build tabs based on intents
-  buildResultsTabs(P, S, T, pct);
-}
-
-function getDoshaBlurb(P, S, T) {
-  var blurbs = {
-    p: "Pitta types are driven, precise, and transformative. Your fire gives you sharp intelligence and natural leadership, but also the tendency toward inflammation, irritability and perfectionism when out of balance. Your practice centres on cooling, softening and releasing control.",
-    k: "Kapha types are grounded, nurturing, and enduring. Your earth energy gives you strength, loyalty and calm, but can also manifest as sluggishness, attachment and resistance to change. Your practice centres on stimulation, movement and release.",
-    v: "Vata types are creative, quick and adaptable. Your air energy gives you inspiration and enthusiasm, but also anxiety, inconsistency and depletion when out of balance. Your practice centres on grounding, warmth and rhythmic routine."
-  };
-  return blurbs[P] + " With " + doshaNames[S] + " as your secondary quality, you carry a dual nature that shapes your specific imbalances, strengths, and the most powerful healing approaches for your unique constitution.";
-}
-
-function buildResultsTabs(P, S, T, pct) {
-  var tabs = [{id:'overview', label:'Overview'}];
-  var intentMap = {
-    nutrition: {id:'nutrition', label:'Nutrition'},
-    fitness: {id:'fitness', label:'Fitness'},
-    skin: {id:'skin', label:'Skin'},
-    hair: {id:'hair', label:'Hair'},
-    supplements: {id:'supplements', label:'Herbs'},
-    sleep: {id:'sleep', label:'Sleep'},
-    stress: {id:'stress', label:'Mind'},
-    digestion: {id:'digestion', label:'Digestion'},
-    oral: {id:'oral', label:'Oral'},
-    energy: {id:'energy', label:'Energy'},
-    relationships: {id:'relationships', label:'Relationships'},
-    cleanse: {id:'cleanse', label:'Cleanse'}
-  };
-
-  var activeIntents = intents.length > 0 ? intents : ['nutrition','fitness','skin','supplements','sleep'];
-  activeIntents.forEach(function(intent) {
-    if (intentMap[intent]) tabs.push(intentMap[intent]);
-  });
-  tabs.push({id:'daily', label:'Daily Routine'});
-
-  var tabsHtml = '';
-  var panelsHtml = '';
-  tabs.forEach(function(tab, i) {
-    tabsHtml += '<button class="rtab' + (i===0?' active':'') + '" data-panel="' + tab.id + '" onclick="switchTab(this)">' + tab.label + '</button>';
-    panelsHtml += '<div class="rtab-panel' + (i===0?' active':'') + '" id="panel-' + tab.id + '">';
-    panelsHtml += buildPanel(tab.id, P, S, T, pct);
-    panelsHtml += '</div>';
-  });
-
-  document.getElementById('rtabs').innerHTML = tabsHtml;
-  document.getElementById('rtab-panels').innerHTML = panelsHtml;
-}
-
-function switchTab(el) {
-  document.querySelectorAll('.rtab').forEach(function(t){t.classList.remove('active');});
-  document.querySelectorAll('.rtab-panel').forEach(function(p){p.classList.remove('active');});
-  el.classList.add('active');
-  var panel = document.getElementById('panel-' + el.dataset.panel);
-  if (panel) panel.classList.add('active');
-}
-
 function openFullProgram() {
   alert('Your full 35-day program is available in the Tridoshic Mastery app. Download it to access your complete personalised protocol with day-by-day schedules, meal plans, supplement stacks, and beauty rituals.');
 }
 // ══════════════════════════════════════════════════════════════
 // PANEL BUILDERS
 // ══════════════════════════════════════════════════════════════
-function buildPanel(id, P, S, T, pct) {
-  switch(id) {
-    case 'overview': return buildOverview(P, S, T, pct);
-    case 'nutrition': return buildNutrition(P, S, T);
-    case 'fitness': return buildFitness(P, S, T);
-    case 'skin': return buildSkin(P, S, T);
-    case 'hair': return buildHair(P, S, T);
-    case 'supplements': return buildSupplements(P, S, T);
-    case 'sleep': return buildSleep(P, S, T);
-    case 'stress': return buildMind(P, S, T);
-    case 'digestion': return buildDigestion(P, S, T);
-    case 'oral': return buildOral(P, S, T);
-    case 'energy': return buildEnergy(P, S, T);
-    case 'relationships': return buildRelationships(P, S, T);
-    case 'cleanse': return buildCleanse(P, S, T);
-    case 'daily': return buildDaily(P, S, T);
-    default: return '<p style="color:var(--muted);font-size:.8rem;">Coming soon.</p>';
-  }
-}
-
 // ── OVERVIEW ──────────────────────────────────────────────────
 function buildOverview(P, S, T, pct) {
   var data = {
@@ -2677,8 +2749,8 @@ async function saveQuizToSupabase(userId) {
       kapha_pct: pct.k,
       vata_pct: pct.v,
       quiz_answers: answers,
+      quiz_clarifiers: answerClarifiers || {},
       intent_selections: intents,
-      goal_profile: goalProfile,
       program_start_date: new Date().toISOString().split('T')[0],
       current_day: 1
     });
