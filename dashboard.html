@@ -609,6 +609,87 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       </div>
     </div>
 
+    <!-- ══ YOUR OJAS — THE WIN STATE ══ -->
+    <div id="ojas-win-section" style="display:none;margin-bottom:24px;">
+      <div class="section-label" style="color:var(--pollen);">✦ Your OJAS</div>
+
+      <!-- State A: Day 35 complete — OJAS ready to generate -->
+      <div id="ojas-generate-state" style="display:none;padding:22px 24px;
+        border:1px solid rgba(237,184,48,.3);
+        background:linear-gradient(135deg,rgba(30,60,30,.6),rgba(10,26,14,.8));">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+              <span style="font-size:1.2rem;">✦</span>
+              <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;
+                font-weight:400;color:var(--cream);">35 Days Complete</h3>
+            </div>
+            <p style="font-size:.7rem;color:var(--muted);line-height:1.75;font-weight:300;">
+              You built something real. ZenZo has 35 days of your data — meals you loved,
+              workouts you completed, practices that became yours. Now it builds your OJAS:
+              the lived weekly practice that is uniquely, permanently you.</p>
+          </div>
+          <button onclick="generateOjas()"
+            style="padding:13px 28px;background:linear-gradient(135deg,var(--pollen),var(--fire));
+            color:var(--root);border:none;font-family:'DM Sans',sans-serif;
+            font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
+            white-space:nowrap;font-weight:600;">
+            Generate My OJAS ✦
+          </button>
+        </div>
+      </div>
+
+      <!-- State B: OJAS generated — view it -->
+      <div id="ojas-complete-state" style="display:none;padding:22px 24px;
+        border:1px solid rgba(237,184,48,.25);
+        background:linear-gradient(135deg,rgba(30,60,30,.5),rgba(10,26,14,.8));">
+        <div style="font-size:.57rem;letter-spacing:.3em;color:var(--pollen);
+          text-transform:uppercase;margin-bottom:6px;" id="ojas-title-label">My OJAS</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--cream);
+          margin-bottom:6px;" id="ojas-intention-display">—</div>
+        <div style="font-size:.68rem;color:var(--muted);line-height:1.7;margin-bottom:14px;" id="ojas-meta-display">—</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="/ojas-practice.html"
+            style="padding:10px 22px;background:linear-gradient(135deg,var(--pollen),var(--fire));
+            color:var(--root);text-decoration:none;font-family:'DM Sans',sans-serif;font-size:.68rem;
+            letter-spacing:.15em;text-transform:uppercase;font-weight:600;">
+            Open My OJAS →
+          </a>
+          <button onclick="showSeasonalReminder()"
+            style="padding:10px 18px;border:1px solid rgba(237,184,48,.3);background:transparent;
+            color:var(--pollen);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+            cursor:pointer;font-family:'DM Sans',sans-serif;">
+            Seasonal Check-in
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEASONAL RENEWAL MODAL ══ -->
+    <div id="seasonal-modal" style="display:none;position:fixed;inset:0;z-index:99999;
+      background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#0D1F10;border:1px solid rgba(237,184,48,.25);
+        width:100%;max-width:520px;padding:28px;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);
+          margin-bottom:6px;" id="seasonal-title">Seasonal Check-in</div>
+        <div style="font-size:.7rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">
+          Doshas shift with seasons. A quick 5-question check-in lets ZenZo assess whether
+          your OJAS practice needs seasonal calibration.</div>
+        <div id="seasonal-content"></div>
+        <div style="display:flex;gap:8px;margin-top:18px;">
+          <button id="seasonal-next-btn" onclick="seasonalNext()"
+            style="flex:1;padding:11px;background:linear-gradient(135deg,var(--pollen),var(--fire));
+            color:var(--root);border:none;font-family:'DM Sans',sans-serif;font-size:.68rem;
+            letter-spacing:.15em;text-transform:uppercase;cursor:pointer;font-weight:500;">
+            Continue →</button>
+          <button onclick="closeSeasonalModal()"
+            style="padding:11px 18px;border:1px solid rgba(255,255,255,.1);background:transparent;
+            color:var(--muted);font-size:.68rem;cursor:pointer;font-family:'DM Sans',sans-serif;">
+            Later</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Action cards -->
     <div class="action-cards">
       <a class="action-card" href="/index.html">
@@ -2862,6 +2943,450 @@ showProgramPreview = function(program) {
     localStorage.setItem('ojas_model', selectedModel);
   }
 };
+
+
+// ══════════════════════════════════════════════════════════════
+// SPRINT 6 — OJAS GENERATION + SEASONAL RENEWAL
+// ══════════════════════════════════════════════════════════════
+
+// ── DETECT DAY 35 ON DASHBOARD LOAD ──
+var _origUpdateStatus6 = updateProgramStatusBlock;
+updateProgramStatusBlock = function() {
+  _origUpdateStatus6();
+  updateOjasSection();
+};
+
+function updateOjasSection() {
+  if (!currentUserProfile) return;
+  var ojasSection = document.getElementById('ojas-win-section');
+  var generateState = document.getElementById('ojas-generate-state');
+  var completeState = document.getElementById('ojas-complete-state');
+  if (!ojasSection) return;
+
+  var day = currentUserProfile.current_day || 0;
+  var ojasGenerated = currentUserProfile.ojas_generated || false;
+  var status = currentUserProfile.program_status || '';
+
+  if (ojasGenerated) {
+    ojasSection.style.display = 'block';
+    if (generateState) generateState.style.display = 'none';
+    if (completeState) completeState.style.display = 'block';
+    loadOjasSummary();
+    checkSeasonalReminder();
+  } else if (day >= 35 || status === 'phase_5_reported') {
+    ojasSection.style.display = 'block';
+    if (generateState) generateState.style.display = 'block';
+    if (completeState) completeState.style.display = 'none';
+  } else {
+    ojasSection.style.display = 'none';
+  }
+}
+
+async function loadOjasSummary() {
+  try {
+    var result = await supabaseClient.from('ojas_practice')
+      .select('practice_json').eq('user_id', currentUser.id)
+      .eq('is_current', true).single();
+    if (!result.data) return;
+    var p = result.data.practice_json;
+    var meta = p.practice_meta || {};
+    var titleEl = document.getElementById('ojas-title-label');
+    var intentionEl = document.getElementById('ojas-intention-display');
+    var metaEl = document.getElementById('ojas-meta-display');
+    if (titleEl) titleEl.textContent = meta.ojas_title || 'My OJAS';
+    if (intentionEl) intentionEl.textContent = meta.ojas_intention || '';
+    if (metaEl) metaEl.textContent =
+      (meta.program_completion || 0) + '% completion across 35 days · ' +
+      (meta.total_xp_earned || 0) + ' XP earned · ' +
+      (meta.days_streaked || 0) + '-day best streak';
+  } catch(e) {}
+}
+
+// ── GENERATE OJAS ──
+async function generateOjas() {
+  var btn = document.querySelector('#ojas-generate-state button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Compiling 35 days...'; }
+
+  try {
+    var synthesis = await compileSynthesis();
+    if (btn) btn.textContent = 'Building your OJAS...';
+
+    // Call both halves in parallel
+    var [res1, res2] = await Promise.all([
+      fetch('/.netlify/functions/generate-ojas', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ apiKey: storedApiKey, model: storedModel, synthesis: synthesis, half: 1 })
+      }),
+      fetch('/.netlify/functions/generate-ojas', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ apiKey: storedApiKey, model: storedModel, synthesis: synthesis, half: 2 })
+      })
+    ]);
+
+    var [d1, d2] = await Promise.all([res1.json(), res2.json()]);
+
+    if (d1.error || d2.error) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Generate My OJAS ✦'; }
+      alert('Error: ' + (d1.error || d2.error));
+      return;
+    }
+
+    // Merge both halves
+    var fullOjas = Object.assign({}, d1.ojas, d2.ojas);
+
+    // Save to Supabase
+    await Promise.all([
+      supabaseClient.from('ojas_practice').insert({
+        user_id: currentUser.id,
+        version: 1,
+        practice_json: fullOjas,
+        generation_input_summary: {
+          constitution: synthesis.constitution,
+          completion: synthesis.overallCompletion,
+          topMealCount: (synthesis.topMeals || []).length,
+          topWorkoutCount: (synthesis.topWorkouts || []).length
+        },
+        is_current: true
+      }),
+      supabaseClient.from('profiles').update({
+        ojas_generated: true,
+        program_status: 'ojas_complete',
+        seasonal_reminder_date: getNextSeasonDate()
+      }).eq('id', currentUser.id)
+    ]);
+
+    if (currentUserProfile) {
+      currentUserProfile.ojas_generated = true;
+      currentUserProfile.program_status = 'ojas_complete';
+    }
+
+    updateOjasSection();
+    showOjasCompletionOverlay(fullOjas);
+
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Generate My OJAS ✦'; }
+    alert('Error generating OJAS: ' + e.message);
+  }
+}
+
+async function compileSynthesis() {
+  var p = currentUserProfile;
+
+  // Load all ratings, reports, favorites
+  var [meals, workouts, reports, favorites, progress] = await Promise.all([
+    supabaseClient.from('meal_ratings').select('*').eq('user_id', currentUser.id),
+    supabaseClient.from('workout_ratings').select('*').eq('user_id', currentUser.id),
+    supabaseClient.from('weekly_reports').select('*').eq('user_id', currentUser.id).order('week_number'),
+    supabaseClient.from('favorite_directory').select('*').eq('user_id', currentUser.id).order('average_rating', {ascending: false}),
+    supabaseClient.from('daily_progress').select('*').eq('user_id', currentUser.id).order('program_day')
+  ]);
+
+  // Compile journal themes from all entries
+  var allJournalText = '';
+  (progress.data || []).forEach(function(d) {
+    if (d.journal_entries) {
+      Object.values(d.journal_entries).forEach(function(entry) {
+        if (entry) allJournalText += ' ' + entry;
+      });
+    }
+  });
+
+  // Simple theme extraction (word frequency on meaningful words)
+  var themes = extractJournalThemes(allJournalText);
+
+  // Aggregate completion
+  var totalChecked = 0, totalTasks = 0;
+  (progress.data || []).forEach(function(d) {
+    if (d.checkboxes) {
+      var vals = Object.values(d.checkboxes);
+      totalTasks += vals.length;
+      totalChecked += vals.filter(function(v){ return v === true; }).length;
+    }
+  });
+
+  // Supplement compliance
+  var suppCompliance = {};
+  (progress.data || []).forEach(function(d) {
+    if (d.checkboxes) {
+      Object.keys(d.checkboxes).filter(function(k){ return k.startsWith('supp-'); })
+        .forEach(function(k) {
+          suppCompliance[k] = (suppCompliance[k] || 0) + (d.checkboxes[k] ? 1 : 0);
+        });
+    }
+  });
+
+  // Weekly highlights from reports
+  var weeklyHighlights = (reports.data || []).map(function(r) {
+    var rep = r.report_json || {};
+    return 'Week ' + r.week_number + ': ' + (rep.overall_summary || '').substring(0, 100);
+  });
+
+  // Average ratings
+  var mealRatings = (meals.data || []).map(function(m){ return m.rating; }).filter(Boolean);
+  var workoutRatings = (workouts.data || []).map(function(w){ return w.rating; }).filter(Boolean);
+  var avgMeal = mealRatings.length ? (mealRatings.reduce(function(a,b){return a+b;},0) / mealRatings.length).toFixed(1) : 0;
+  var avgWorkout = workoutRatings.length ? (workoutRatings.reduce(function(a,b){return a+b;},0) / workoutRatings.length).toFixed(1) : 0;
+
+  return {
+    name: (p.full_name || '').split(' ')[0] || 'Friend',
+    constitution: {
+      primary: p.dosha_primary || 'p',
+      secondary: p.dosha_secondary || 'k',
+      tertiary: p.dosha_tertiary || 'v'
+    },
+    overallCompletion: totalTasks > 0 ? Math.round((totalChecked/totalTasks)*100) : 0,
+    totalXP: p.xp || 0,
+    maxStreak: p.streak_days || 0,
+    avgMealRating: parseFloat(avgMeal),
+    avgWorkoutRating: parseFloat(avgWorkout),
+    topMeals: (favorites.data || []).filter(function(f){ return f.category.startsWith('meal'); }).slice(0,12),
+    topWorkouts: (favorites.data || []).filter(function(f){ return f.category === 'workout'; }).slice(0,8),
+    journalThemes: themes,
+    weeklyHighlights: weeklyHighlights,
+    supplementCompliance: suppCompliance,
+    dietaryFramework: (currentPhysical || {}).dietaryFramework || 'omnivore',
+    allergies: (currentPhysical || {}).allergies || '',
+    fitnessGoal: (currentPhysical || {}).fitnessGoal || 'general health',
+    wakeTime: (currentLifestyle || {}).wakeTime || '7:00 AM',
+    sleepTime: (currentLifestyle || {}).sleepTime || '10:30 PM',
+    eveningPreferences: (currentLifestyle || {}).eveningPreferences || [],
+    skinNotes: []
+  };
+}
+
+function extractJournalThemes(text) {
+  if (!text) return [];
+  var stopWords = new Set(['the','and','for','that','this','with','from','have',
+    'was','are','not','but','what','how','when','they','been','your','can',
+    'its','had','his','her','you','our','will','more','also','into','than',
+    'then','them','some','just','like','time','day','week','today','felt',
+    'feel','really','very','much','good','great','still','got','did','one','my']);
+  var words = text.toLowerCase().match(/[a-z]{4,}/g) || [];
+  var freq = {};
+  words.forEach(function(w) {
+    if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1;
+  });
+  return Object.entries(freq)
+    .sort(function(a,b){ return b[1]-a[1]; })
+    .slice(0,8)
+    .map(function(e){ return e[0]; });
+}
+
+function getNextSeasonDate() {
+  var now = new Date();
+  var month = now.getMonth();
+  var year = now.getFullYear();
+  // Next season starts: Mar 20, Jun 21, Sep 22, Dec 21
+  var seasons = [
+    new Date(year, 2, 20), new Date(year, 5, 21),
+    new Date(year, 8, 22), new Date(year, 11, 21),
+    new Date(year+1, 2, 20)
+  ];
+  for (var i = 0; i < seasons.length; i++) {
+    if (seasons[i] > now) return seasons[i].toISOString().split('T')[0];
+  }
+  return seasons[seasons.length-1].toISOString().split('T')[0];
+}
+
+function showOjasCompletionOverlay(ojas) {
+  var meta = ojas.practice_meta || {};
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.92);' +
+    'display:flex;align-items:center;justify-content:center;padding:24px;';
+  overlay.innerHTML =
+    '<div style="background:#0D1F10;border:1px solid rgba(237,184,48,.3);' +
+    'padding:36px;max-width:500px;width:100%;text-align:center;">' +
+    '<div style="font-size:2.5rem;margin-bottom:14px;">✦</div>' +
+    '<div style="font-size:.58rem;letter-spacing:.4em;color:var(--pollen);' +
+    'text-transform:uppercase;margin-bottom:10px;">Your OJAS is complete</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:1.5rem;color:var(--cream);' +
+    'line-height:1.4;margin-bottom:12px;">' + (meta.ojas_title || 'My Living Practice') + '</div>' +
+    '<div style="font-size:.76rem;color:var(--muted);line-height:1.8;font-style:italic;' +
+    'margin-bottom:20px;">"' + (meta.ojas_intention || '') + '"</div>' +
+    '<div style="font-size:.68rem;color:var(--muted);line-height:1.7;margin-bottom:24px;">' +
+    'Built from ' + (meta.program_completion || 0) + '% completion across 35 days. ' +
+    (meta.total_xp_earned || 0) + ' XP earned. ' +
+    'This is yours. Live it.</div>' +
+    '<div style="display:flex;gap:10px;justify-content:center;">' +
+    '<a href="/ojas-practice.html" style="padding:12px 28px;' +
+    'background:linear-gradient(135deg,var(--pollen),var(--fire));color:var(--root);' +
+    'text-decoration:none;font-family:DM Sans,sans-serif;font-size:.7rem;' +
+    'letter-spacing:.18em;text-transform:uppercase;font-weight:600;">Open My OJAS →</a>' +
+    '<button onclick="var el=this;while(el&&!el.style.position.includes(\"fixed\"))el=el.parentElement;if(el)el.remove()" ' +
+    'style="padding:12px 20px;border:1px solid rgba(255,255,255,.1);background:transparent;' +
+    'color:var(--muted);font-size:.68rem;cursor:pointer;font-family:DM Sans,sans-serif;">Stay here</button>' +
+    '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+// ── SEASONAL RENEWAL ──
+var seasonalStep = 0;
+var seasonalAnswers = {};
+
+var seasonalQuestions = [
+  {
+    q: 'How would you describe your energy levels compared to when you started the program?',
+    opts: ['Significantly higher','Somewhat higher','About the same','Lower than before']
+  },
+  {
+    q: 'How is your digestion now compared to 35 days ago?',
+    opts: ['Much more regular and settled','Somewhat better','About the same','Still inconsistent']
+  },
+  {
+    q: 'Which dosha quality feels most dominant in your body right now?',
+    opts: ['Hot, sharp, intense, slightly inflamed (Pitta)','Heavy, slow, congested, sluggish (Kapha)','Dry, scattered, restless, anxious (Vata)','Balanced — I feel relatively settled']
+  },
+  {
+    q: 'The current season where you are is:',
+    opts: ['Late winter / Early spring','Late spring / Summer','Late summer / Autumn','Winter']
+  },
+  {
+    q: 'What feels most important to focus on in the next cycle?',
+    opts: ['Deepening what is working — refine and sustain','Reset and cleanse — I need a fresh start','Push further — I am ready for more intensity','Rest and consolidate — I need gentler practices']
+  }
+];
+
+function checkSeasonalReminder() {
+  if (!currentUserProfile || !currentUserProfile.seasonal_reminder_date) return;
+  var reminderDate = new Date(currentUserProfile.seasonal_reminder_date);
+  var today = new Date();
+  var daysUntil = Math.ceil((reminderDate - today) / 86400000);
+  if (daysUntil <= 7 && daysUntil >= 0) {
+    // Show a gentle banner
+    var banner = document.createElement('div');
+    banner.style.cssText = 'padding:10px 16px;border:1px solid rgba(237,184,48,.2);' +
+      'background:rgba(237,184,48,.05);font-size:.68rem;color:var(--muted);' +
+      'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
+    banner.innerHTML = '<span>🌿 A new season is approaching — time for a check-in.</span>' +
+      '<button onclick="showSeasonalReminder()" style="padding:5px 12px;border:1px solid rgba(237,184,48,.3);' +
+      'background:transparent;color:var(--pollen);font-size:.6rem;letter-spacing:.1em;' +
+      'cursor:pointer;font-family:DM Sans,sans-serif;text-transform:uppercase;">Check In</button>';
+    var section = document.getElementById('ojas-win-section');
+    if (section) section.insertBefore(banner, section.firstChild);
+  }
+}
+
+function showSeasonalReminder() {
+  seasonalStep = 0;
+  seasonalAnswers = {};
+  document.getElementById('seasonal-modal').style.display = 'flex';
+  renderSeasonalQuestion();
+}
+
+function closeSeasonalModal() {
+  document.getElementById('seasonal-modal').style.display = 'none';
+}
+
+function renderSeasonalQuestion() {
+  var q = seasonalQuestions[seasonalStep];
+  if (!q) { finishSeasonalCheckin(); return; }
+
+  var titleEl = document.getElementById('seasonal-title');
+  var content = document.getElementById('seasonal-content');
+  var nextBtn = document.getElementById('seasonal-next-btn');
+  if (titleEl) titleEl.textContent = 'Seasonal Check-in — ' + (seasonalStep+1) + ' of ' + seasonalQuestions.length;
+  if (nextBtn) nextBtn.textContent = seasonalStep < seasonalQuestions.length - 1 ? 'Continue →' : 'See ZenZo Read →';
+
+  var html = '<div style="font-size:.78rem;color:var(--cream);line-height:1.7;margin-bottom:14px;">' + q.q + '</div>';
+  q.opts.forEach(function(opt, i) {
+    var sel = seasonalAnswers[seasonalStep] === i;
+    html += '<div onclick="selectSeasonalOpt(' + i + ',this)" style="padding:9px 12px;' +
+      'margin-bottom:6px;border:1px solid ' + (sel ? 'var(--bloom)' : 'rgba(75,191,133,.12)') + ';' +
+      'background:' + (sel ? 'rgba(61,155,106,.1)' : 'transparent') + ';' +
+      'font-size:.7rem;color:' + (sel ? 'var(--cream)' : 'var(--muted)') + ';cursor:pointer;' +
+      'display:flex;align-items:flex-start;gap:8px;">' +
+      '<span>' + (sel ? '☑' : '☐') + '</span><span>' + opt + '</span></div>';
+  });
+  if (content) content.innerHTML = html;
+}
+
+function selectSeasonalOpt(i, el) {
+  seasonalAnswers[seasonalStep] = i;
+  renderSeasonalQuestion();
+}
+
+function seasonalNext() {
+  if (seasonalAnswers[seasonalStep] === undefined) return;
+  seasonalStep++;
+  if (seasonalStep >= seasonalQuestions.length) {
+    finishSeasonalCheckin();
+  } else {
+    renderSeasonalQuestion();
+  }
+}
+
+async function finishSeasonalCheckin() {
+  var content = document.getElementById('seasonal-content');
+  var nextBtn = document.getElementById('seasonal-next-btn');
+  if (nextBtn) nextBtn.style.display = 'none';
+
+  // Simple local analysis based on answers
+  var doshaSigns = analyzeSeasonalAnswers(seasonalAnswers);
+  var html = '<div style="padding:14px;border:1px solid rgba(75,191,133,.2);' +
+    'background:rgba(61,155,106,.06);margin-bottom:12px;">';
+  html += '<div style="font-family:Playfair Display,serif;font-size:.95rem;color:var(--cream);' +
+    'margin-bottom:8px;">ZenZo seasonal read</div>';
+  html += '<div style="font-size:.73rem;color:var(--muted);line-height:1.8;">' + doshaSigns.message + '</div>';
+  html += '</div>';
+
+  if (doshaSigns.startNewCycle) {
+    html += '<button onclick="confirmNewCycle()" style="width:100%;padding:11px;' +
+      'background:linear-gradient(135deg,var(--leaf),var(--bloom));color:var(--cream);' +
+      'border:none;font-family:DM Sans,sans-serif;font-size:.68rem;letter-spacing:.15em;' +
+      'text-transform:uppercase;cursor:pointer;font-weight:500;margin-bottom:8px;">' +
+      'Start a New 35-Day Cycle →</button>';
+  }
+  html += '<button onclick="closeSeasonalModal()" style="width:100%;padding:10px;' +
+    'border:1px solid rgba(75,191,133,.2);background:transparent;color:var(--muted);' +
+    'font-size:.65rem;cursor:pointer;font-family:DM Sans,sans-serif;">Close</button>';
+
+  if (content) content.innerHTML = html;
+
+  // Update seasonal reminder date
+  try {
+    await supabaseClient.from('profiles').update({
+      seasonal_reminder_date: getNextSeasonDate()
+    }).eq('id', currentUser.id);
+  } catch(e) {}
+}
+
+function analyzeSeasonalAnswers(answers) {
+  var doshaDominant = '';
+  var q3 = answers[2];  // Current dosha question
+  var q5 = answers[4];  // What to focus on
+
+  if (q3 === 0) doshaDominant = 'Pitta';
+  else if (q3 === 1) doshaDominant = 'Kapha';
+  else if (q3 === 2) doshaDominant = 'Vata';
+
+  var messages = {
+    Pitta: 'You are showing signs of elevated Pitta — heat, intensity, and sharpness. Your OJAS practice should lean toward cooling foods, reduced exercise intensity, and more restorative evening practices this season.',
+    Kapha: 'Kapha signs are dominant — heaviness and slowness. This season calls for lighter foods, more stimulating movement, earlier wake times, and practices that create momentum and warmth.',
+    Vata: 'Vata is elevated — dryness, restlessness, and scatter. Prioritize consistency, warming nourishing foods, oil massage, and grounding practices. Reduce stimulation and variable schedules.',
+    '': 'You appear balanced across the three doshas — a sign your OJAS practice is working. Minor seasonal calibration may support you through the upcoming season, but no major adjustments are needed.'
+  };
+
+  return {
+    dominant: doshaDominant,
+    message: messages[doshaDominant] || messages[''],
+    startNewCycle: q5 === 1  // "Reset and cleanse — fresh start"
+  };
+}
+
+function confirmNewCycle() {
+  closeSeasonalModal();
+  // Reset program for new cycle
+  supabaseClient.from('profiles').update({
+    program_status: 'not_started',
+    program_json: null,
+    current_day: 0,
+    ojas_generated: false,
+    current_week: 0
+  }).eq('id', currentUser.id).then(function() {
+    alert('Your new cycle is ready. Go to Goals & Focus to update your intention, then build your new program.');
+    window.location.reload();
+  });
+}
 
 </script>
 
