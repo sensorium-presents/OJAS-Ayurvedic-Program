@@ -1565,51 +1565,100 @@ function showBuildMsg(id, text, isError) {
 async function generateProgram() {
   var nextBtn = document.getElementById('build-next-btn');
   var backBtn = document.getElementById('build-back-btn');
+  var msgEl = document.getElementById('gen-msg');
   nextBtn.disabled = true;
-  nextBtn.textContent = 'Generating your program...';
+  nextBtn.textContent = 'Starting generation...';
   if (backBtn) backBtn.style.display = 'none';
 
-  showBuildMsg('gen-msg', 'Claude is analyzing your full profile and building your personalized program. This takes 20–40 seconds...', false);
+  // ── PHASE PROGRESS UI ──
+  // Replace the gen-msg area with a phase-by-phase progress display
+  if (msgEl) {
+    msgEl.style.display = 'block';
+    msgEl.style.borderColor = 'var(--bloom)';
+    msgEl.style.color = 'var(--muted)';
+    msgEl.style.background = 'rgba(61,155,106,.06)';
+    msgEl.innerHTML =
+      '<div style="font-size:.7rem;color:var(--cream);margin-bottom:10px;">Building your 35-day program...</div>' +
+      '<div id="phase-progress-track" style="height:4px;background:rgba(255,255,255,.06);margin-bottom:10px;overflow:hidden;">' +
+        '<div id="phase-progress-fill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--leaf),var(--bloom));transition:width .6s;"></div>' +
+      '</div>' +
+      '<div id="phase-status-list" style="display:flex;flex-direction:column;gap:6px;">' +
+        phaseStatusRow(1) + phaseStatusRow(2) + phaseStatusRow(3) + phaseStatusRow(4) + phaseStatusRow(5) +
+      '</div>';
+  }
+
+  var brief = buildProgramBrief();
+  var allPhases = [];
+  var programMeta = {
+    user_constitution: brief.constitution.primary + '-' + brief.constitution.secondary + '-' + brief.constitution.tertiary,
+    primary_dosha: brief.constitution.primary.toLowerCase(),
+    program_phases: ['Purification & Foundation','Building Momentum','Integration','Peak Practice','Consolidation'],
+    dominant_themes: brief.focus_areas.slice(0, 5),
+    daily_intention_template: 'Today I honor my constitution and align my actions with my highest wellbeing.'
+  };
 
   try {
-    var brief = buildProgramBrief();
-    var response = await fetch('/.netlify/functions/generate-program', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        apiKey: storedApiKey,
-        model: selectedModel,
-        brief: brief
-      })
-    });
+    for (var phase = 1; phase <= 5; phase++) {
+      setPhaseStatus(phase, 'generating');
+      nextBtn.textContent = 'Phase ' + phase + ' of 5...';
 
-    var data = await response.json();
+      var response = await fetch('/.netlify/functions/generate-program', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          apiKey: storedApiKey,
+          model: selectedModel,
+          brief: brief,
+          phase: phase,
+          previousPhases: allPhases.map(function(p) {
+            return { phase: p.phase, days: p.days.slice(-2) }; // send last 2 days as context
+          })
+        })
+      });
 
-    if (data.error) {
-      showBuildMsg('gen-msg', 'Generation error: ' + data.error, true);
-      nextBtn.disabled = false;
-      nextBtn.textContent = 'Try Again';
-      if (backBtn) backBtn.style.display = 'block';
-      return;
+      var data = await response.json();
+
+      if (data.error) {
+        setPhaseStatus(phase, 'error');
+        showBuildMsg('gen-msg', 'Error on Phase ' + phase + ': ' + data.error + ' — you can try again.', true);
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Retry Phase ' + phase;
+        nextBtn.onclick = function() { retryFromPhase(phase, brief, allPhases); };
+        if (backBtn) backBtn.style.display = 'block';
+        return;
+      }
+
+      allPhases.push(data);
+      setPhaseStatus(phase, 'done');
+      var pct = (phase / 5 * 100);
+      var fill = document.getElementById('phase-progress-fill');
+      if (fill) fill.style.width = pct + '%';
     }
 
-    var program = data.program;
+    // ── ASSEMBLE FULL PROGRAM ──
+    var allDays = [];
+    allPhases.forEach(function(p) {
+      (p.days || []).forEach(function(d) { allDays.push(d); });
+    });
 
-    // Save to Supabase
+    var fullProgram = {
+      program_meta: programMeta,
+      days: allDays
+    };
+
+    // ── SAVE TO SUPABASE ──
     await supabaseClient.from('profiles').update({
-      program_json: program,
+      program_json: fullProgram,
       program_generated_at: new Date().toISOString(),
       program_status: 'active',
       program_model_used: selectedModel
     }).eq('id', currentUser.id);
 
-    // Update local state
     if (currentUserProfile) {
       currentUserProfile.program_status = 'active';
-      currentUserProfile.program_json = program;
+      currentUserProfile.program_json = fullProgram;
     }
 
-    // Store API key encrypted (just the model preference for now)
     await supabaseClient.from('user_api_connections').upsert({
       user_id: currentUser.id,
       provider: 'claude',
@@ -1617,15 +1666,131 @@ async function generateProgram() {
       connected_at: new Date().toISOString()
     }, {onConflict: 'user_id,provider'});
 
-    showProgramPreview(program);
+    showProgramPreview(fullProgram);
 
   } catch(e) {
-    showBuildMsg('gen-msg', 'Connection error. Check your API key and try again.', true);
+    showBuildMsg('gen-msg', 'Connection error: ' + e.message + '. Check your API key and try again.', true);
     nextBtn.disabled = false;
     nextBtn.textContent = 'Try Again';
     if (backBtn) backBtn.style.display = 'block';
   }
 }
+
+async function retryFromPhase(startPhase, brief, completedPhases) {
+  var nextBtn = document.getElementById('build-next-btn');
+  var backBtn = document.getElementById('build-back-btn');
+  nextBtn.disabled = true;
+  if (backBtn) backBtn.style.display = 'none';
+
+  var allPhases = completedPhases.slice();
+
+  try {
+    for (var phase = startPhase; phase <= 5; phase++) {
+      setPhaseStatus(phase, 'generating');
+      nextBtn.textContent = 'Phase ' + phase + ' of 5...';
+
+      var response = await fetch('/.netlify/functions/generate-program', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          apiKey: storedApiKey,
+          model: selectedModel,
+          brief: brief,
+          phase: phase,
+          previousPhases: allPhases.map(function(p) {
+            return { phase: p.phase, days: p.days.slice(-2) };
+          })
+        })
+      });
+
+      var data = await response.json();
+
+      if (data.error) {
+        setPhaseStatus(phase, 'error');
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Retry Phase ' + phase;
+        nextBtn.onclick = function() { retryFromPhase(phase, brief, allPhases); };
+        if (backBtn) backBtn.style.display = 'block';
+        return;
+      }
+
+      allPhases.push(data);
+      setPhaseStatus(phase, 'done');
+      var fill = document.getElementById('phase-progress-fill');
+      if (fill) fill.style.width = (phase / 5 * 100) + '%';
+    }
+
+    var allDays = [];
+    allPhases.forEach(function(p) {
+      (p.days || []).forEach(function(d) { allDays.push(d); });
+    });
+
+    var fullProgram = {
+      program_meta: {
+        user_constitution: brief.constitution.primary + '-' + brief.constitution.secondary + '-' + brief.constitution.tertiary,
+        primary_dosha: brief.constitution.primary.toLowerCase(),
+        program_phases: ['Purification & Foundation','Building Momentum','Integration','Peak Practice','Consolidation'],
+        dominant_themes: brief.focus_areas.slice(0, 5),
+        daily_intention_template: 'Today I honor my constitution and align my actions with my highest wellbeing.'
+      },
+      days: allDays
+    };
+
+    await supabaseClient.from('profiles').update({
+      program_json: fullProgram,
+      program_generated_at: new Date().toISOString(),
+      program_status: 'active',
+      program_model_used: selectedModel
+    }).eq('id', currentUser.id);
+
+    if (currentUserProfile) {
+      currentUserProfile.program_status = 'active';
+      currentUserProfile.program_json = fullProgram;
+    }
+
+    showProgramPreview(fullProgram);
+
+  } catch(e) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Retry Phase ' + startPhase;
+    if (backBtn) backBtn.style.display = 'block';
+  }
+}
+
+function phaseStatusRow(num) {
+  var names = ['','Purification & Foundation','Building Momentum','Integration','Peak Practice','Consolidation'];
+  return '<div id="phase-row-' + num + '" style="display:flex;align-items:center;gap:10px;' +
+    'padding:8px 10px;border:1px solid rgba(75,191,133,.08);background:rgba(10,26,14,.3);">' +
+    '<span id="phase-icon-' + num + '" style="font-size:.9rem;width:18px;text-align:center;">○</span>' +
+    '<span style="font-size:.66rem;color:var(--muted);flex:1;">Phase ' + num + ': ' + names[num] + ' (Days ' + ((num-1)*7+1) + '–' + (num*7) + ')</span>' +
+    '<span id="phase-label-' + num + '" style="font-size:.58rem;color:var(--muted);letter-spacing:.08em;">Waiting</span>' +
+    '</div>';
+}
+
+function setPhaseStatus(num, status) {
+  var icon = document.getElementById('phase-icon-' + num);
+  var label = document.getElementById('phase-label-' + num);
+  var row = document.getElementById('phase-row-' + num);
+  if (!icon || !label || !row) return;
+
+  var states = {
+    waiting:     {icon:'○', color:'var(--muted)',  text:'Waiting',    bg:'rgba(10,26,14,.3)'},
+    generating:  {icon:'◌', color:'var(--pollen)', text:'Generating...', bg:'rgba(237,184,48,.04)'},
+    done:        {icon:'✓', color:'var(--bloom)',  text:'Complete',   bg:'rgba(61,155,106,.06)'},
+    error:       {icon:'✗', color:'#E07070',       text:'Error',      bg:'rgba(224,85,85,.06)'}
+  };
+
+  var s = states[status] || states.waiting;
+  icon.textContent = s.icon;
+  icon.style.color = s.color;
+  label.textContent = s.text;
+  label.style.color = s.color;
+  row.style.background = s.bg;
+  row.style.borderColor = status === 'generating' ? 'rgba(237,184,48,.2)' :
+                          status === 'done' ? 'rgba(75,191,133,.2)' :
+                          status === 'error' ? 'rgba(224,85,85,.2)' : 'rgba(75,191,133,.08)';
+}
+
 
 function buildProgramBrief() {
   var doshaNames = {p:'Pitta', k:'Kapha', v:'Vata'};
