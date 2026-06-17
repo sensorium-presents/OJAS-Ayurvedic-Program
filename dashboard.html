@@ -497,6 +497,118 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       </div>
     </div>
 
+    <!-- ══ WEEKLY REPORT & RECORDS ══ -->
+    <div class="section-label">Weekly OJAS Report</div>
+    <div id="weekly-report-section" style="margin-bottom:24px;">
+
+      <!-- State A: Week in progress -->
+      <div id="week-in-progress" style="display:none;padding:16px;
+        border:1px solid var(--border);background:rgba(10,26,14,.3);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:.75rem;color:var(--cream);font-weight:500;margin-bottom:3px;">
+              Week <span id="current-week-num">1</span> in progress</div>
+            <div style="font-size:.67rem;color:var(--muted);">
+              Complete all 7 days to unlock your weekly report and generate Week <span id="next-week-num">2</span>.</div>
+          </div>
+          <div style="font-size:.68rem;color:var(--bloom);">
+            Day <strong id="week-day-count" style="color:var(--cream);">—</strong> / 7 complete</div>
+        </div>
+      </div>
+
+      <!-- State B: Week complete — report ready to generate -->
+      <div id="week-report-ready" style="display:none;padding:16px;
+        border:1px solid rgba(237,184,48,.2);background:rgba(237,184,48,.04);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-size:.75rem;color:var(--cream);font-weight:500;margin-bottom:3px;">
+              ✦ Week <span id="ready-week-num">1</span> complete</div>
+            <div style="font-size:.67rem;color:var(--muted);">
+              ZenZo is ready to review your week — ratings, journal, patterns, and what to adjust for Week <span id="ready-next-week">2</span>.</div>
+          </div>
+          <button onclick="generateWeeklyReport()"
+            style="padding:10px 22px;background:linear-gradient(135deg,var(--pollen),var(--fire));
+            color:var(--root);border:none;font-family:'DM Sans',sans-serif;font-size:.68rem;
+            letter-spacing:.15em;text-transform:uppercase;cursor:pointer;font-weight:500;
+            white-space:nowrap;">Generate Report ✦</button>
+        </div>
+      </div>
+
+      <!-- State C: Report generated — in clarification -->
+      <div id="week-clarifying" style="display:none;padding:16px;
+        border:1px solid rgba(75,191,133,.2);background:rgba(61,155,106,.04);">
+        <div style="font-size:.75rem;color:var(--cream);font-weight:500;margin-bottom:4px;">
+          Your Week <span id="clarify-week-num">1</span> report is ready</div>
+        <div style="font-size:.67rem;color:var(--muted);margin-bottom:12px;">
+          Review your findings and complete the clarification conversation with ZenZo before generating Week <span id="clarify-next-week">2</span>.</div>
+        <button onclick="openWeeklyReportModal()"
+          style="padding:9px 20px;border:1px solid rgba(75,191,133,.3);background:rgba(61,155,106,.1);
+          color:var(--bloom);font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
+          cursor:pointer;font-family:'DM Sans',sans-serif;">Open Report & Continue →</button>
+      </div>
+    </div>
+
+    <!-- ══ WEEKLY RECORDS ══ -->
+    <div id="weekly-records-section" style="display:none;margin-bottom:24px;">
+      <div class="section-label">Past Weeks</div>
+      <div id="weekly-records-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- ══ WEEKLY REPORT MODAL ══ -->
+    <div id="weekly-report-modal" style="display:none;position:fixed;inset:0;z-index:99999;
+      background:rgba(0,0,0,.92);align-items:flex-start;justify-content:center;
+      overflow-y:auto;padding:20px;">
+      <div style="background:#0D1F10;border:1px solid rgba(75,191,133,.25);
+        width:100%;max-width:620px;margin:20px auto;">
+
+        <!-- Modal header -->
+        <div style="padding:18px 24px;border-bottom:1px solid rgba(75,191,133,.12);
+          display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:.55rem;letter-spacing:.25em;color:var(--pollen);
+              text-transform:uppercase;margin-bottom:3px;" id="report-modal-phase-label">Week 1 Report</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;
+              color:var(--cream);" id="report-modal-title">Your Weekly OJAS Analysis</div>
+          </div>
+          <button onclick="closeWeeklyReportModal()"
+            style="background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;">✕</button>
+        </div>
+
+        <!-- Report stage indicator -->
+        <div style="padding:10px 24px;border-bottom:1px solid rgba(75,191,133,.08);
+          display:flex;gap:8px;">
+          <div id="report-stage-1" style="flex:1;padding:6px;text-align:center;font-size:.58rem;
+            letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(75,191,133,.2);
+            color:var(--bloom);">1. Findings</div>
+          <div id="report-stage-2" style="flex:1;padding:6px;text-align:center;font-size:.58rem;
+            letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(75,191,133,.08);
+            color:var(--muted);">2. ZenZo Talk</div>
+          <div id="report-stage-3" style="flex:1;padding:6px;text-align:center;font-size:.58rem;
+            letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(75,191,133,.08);
+            color:var(--muted);">3. Confirm & Build</div>
+        </div>
+
+        <!-- Report content area -->
+        <div id="report-modal-content" style="padding:24px;max-height:60vh;overflow-y:auto;"></div>
+
+        <!-- Modal footer -->
+        <div style="padding:16px 24px;border-top:1px solid rgba(75,191,133,.1);
+          display:flex;align-items:center;justify-content:space-between;">
+          <button id="report-back-btn" onclick="reportStageBack()"
+            style="padding:9px 20px;border:1px solid rgba(75,191,133,.18);background:transparent;
+            color:var(--muted);font-size:.65rem;letter-spacing:.12em;cursor:pointer;
+            font-family:'DM Sans',sans-serif;display:none;">← Back</button>
+          <div style="flex:1;"></div>
+          <button id="report-next-btn" onclick="reportStageNext()"
+            style="padding:10px 28px;background:linear-gradient(135deg,var(--leaf),var(--bloom));
+            color:var(--cream);border:none;font-family:'DM Sans',sans-serif;font-size:.68rem;
+            letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-weight:500;">
+            Continue →
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Action cards -->
     <div class="action-cards">
       <a class="action-card" href="/index.html">
@@ -1345,7 +1457,8 @@ function updateProgramStatusBlock() {
   var active = document.getElementById('program-active');
   if (!locked) return;
 
-  var hasProgram = currentUserProfile && currentUserProfile.program_status === 'active';
+  var activeStatuses = ['active','phase_1_active','phase_2_active','phase_3_active','phase_4_active','phase_5_active'];
+  var hasProgram = currentUserProfile && activeStatuses.indexOf(currentUserProfile.program_status) > -1;
   var hasGoals = currentIntents.length > 0;
 
   if (hasProgram) {
@@ -1598,7 +1711,7 @@ async function generateProgram() {
   };
 
   try {
-    for (var phase = 1; phase <= 5; phase++) {
+    for (var phase = 1; phase <= 1; phase++) { // Option B: only Phase 1 on initial build
       setPhaseStatus(phase, 'generating');
       nextBtn.textContent = 'Phase ' + phase + ' of 5...';
 
@@ -1650,7 +1763,7 @@ async function generateProgram() {
     await supabaseClient.from('profiles').update({
       program_json: fullProgram,
       program_generated_at: new Date().toISOString(),
-      program_status: 'active',
+      program_status: 'phase_1_active',
       program_model_used: selectedModel
     }).eq('id', currentUser.id);
 
@@ -2025,6 +2138,715 @@ async function callZenZoAPI(userText) {
 
 
 
+
+
+// ══════════════════════════════════════════════════════════════
+// SPRINT 5 — WEEKLY REPORT, CLARIFICATION, ADAPTIVE GENERATION
+// ══════════════════════════════════════════════════════════════
+
+var currentWeeklyReport = null;
+var currentReportStage = 1;  // 1=findings, 2=clarification, 3=confirm+build
+var clarificationQA = [];    // [{question, answer}]
+var clarificationStep = 0;
+var storedApiKey = localStorage.getItem('ojas_api_key') || '';
+var storedModel = localStorage.getItem('ojas_model') || 'claude-haiku-4-5';
+var confirmedDirection = '';
+
+// ── UPDATE WEEKLY SECTION ON DASHBOARD LOAD ──
+// Hooked into loadDashboard via the existing hook pattern
+var _origUpdateProgramStatus = updateProgramStatusBlock;
+updateProgramStatusBlock = function() {
+  _origUpdateProgramStatus();
+  updateWeeklySection();
+};
+
+function updateWeeklySection() {
+  if (!currentUserProfile) return;
+
+  var currentDay = currentUserProfile.current_day || 1;
+  var completedPhase = Math.floor((currentDay - 1) / 7);  // 0 = none, 1 = week 1 done, etc.
+  var currentPhase = Math.ceil(currentDay / 7);
+  var dayInWeek = ((currentDay - 1) % 7) + 1;
+
+  var inProgress = document.getElementById('week-in-progress');
+  var reportReady = document.getElementById('week-report-ready');
+  var clarifying = document.getElementById('week-clarifying');
+
+  // Check if we have a pending report (generated but not yet used to build next phase)
+  var hasPendingReport = currentUserProfile.program_status &&
+    currentUserProfile.program_status.includes('_reported');
+
+  if (hasPendingReport) {
+    var weekNum = completedPhase;
+    if (inProgress) inProgress.style.display = 'none';
+    if (reportReady) reportReady.style.display = 'none';
+    if (clarifying) clarifying.style.display = 'block';
+    var el1 = document.getElementById('clarify-week-num');
+    var el2 = document.getElementById('clarify-next-week');
+    if (el1) el1.textContent = weekNum;
+    if (el2) el2.textContent = weekNum + 1;
+  } else if (dayInWeek === 7 || (currentDay % 7 === 0 && currentDay > 0)) {
+    // Day 7, 14, 21, 28 complete — report ready
+    var weekNum2 = completedPhase;
+    if (weekNum2 < 5) {  // Don't trigger after week 5 (handled by OJAS generation)
+      if (inProgress) inProgress.style.display = 'none';
+      if (reportReady) reportReady.style.display = 'block';
+      if (clarifying) clarifying.style.display = 'none';
+      var rEl1 = document.getElementById('ready-week-num');
+      var rEl2 = document.getElementById('ready-next-week');
+      if (rEl1) rEl1.textContent = weekNum2;
+      if (rEl2) rEl2.textContent = weekNum2 + 1;
+    }
+  } else if (currentDay > 0) {
+    // Mid-week
+    if (inProgress) inProgress.style.display = 'block';
+    if (reportReady) reportReady.style.display = 'none';
+    if (clarifying) clarifying.style.display = 'none';
+    var wEl1 = document.getElementById('current-week-num');
+    var wEl2 = document.getElementById('next-week-num');
+    var wEl3 = document.getElementById('week-day-count');
+    if (wEl1) wEl1.textContent = currentPhase;
+    if (wEl2) wEl2.textContent = currentPhase + 1;
+    if (wEl3) wEl3.textContent = dayInWeek;
+  }
+
+  // Load weekly records
+  loadWeeklyRecords();
+}
+
+// ── GENERATE WEEKLY REPORT ──
+async function generateWeeklyReport() {
+  var btn = document.querySelector('#week-report-ready button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Analyzing your week...'; }
+
+  try {
+    var weekNum = Math.floor(((currentUserProfile.current_day || 1) - 1) / 7);
+    var weekData = await collectWeekData(weekNum);
+
+    var response = await fetch('/.netlify/functions/generate-report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        apiKey: storedApiKey || prompt('Enter your Anthropic API key to generate your report:') || '',
+        model: storedModel,
+        weekData: weekData,
+        userProfile: currentUserProfile,
+        phase: weekNum
+      })
+    });
+
+    var data = await response.json();
+    if (data.error) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Generate Report ✦'; }
+      alert('Report generation error: ' + data.error);
+      return;
+    }
+
+    currentWeeklyReport = data.report;
+
+    // Save report to Supabase
+    await supabaseClient.from('weekly_reports').insert({
+      user_id: currentUser.id,
+      week_number: weekNum,
+      report_json: currentWeeklyReport,
+      week_start_date: new Date(Date.now() - (6 * 86400000)).toISOString().split('T')[0]
+    });
+
+    // Mark status as reported
+    await supabaseClient.from('profiles').update({
+      program_status: 'phase_' + weekNum + '_reported'
+    }).eq('id', currentUser.id);
+    if (currentUserProfile) currentUserProfile.program_status = 'phase_' + weekNum + '_reported';
+
+    updateWeeklySection();
+    openWeeklyReportModal();
+
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Generate Report ✦'; }
+    alert('Connection error: ' + e.message);
+  }
+}
+
+async function collectWeekData(weekNum) {
+  var dayStart = (weekNum - 1) * 7 + 1;
+  var dayEnd = weekNum * 7;
+
+  var [meals, workouts, progress] = await Promise.all([
+    supabaseClient.from('meal_ratings')
+      .select('*').eq('user_id', currentUser.id)
+      .gte('program_day', dayStart).lte('program_day', dayEnd),
+    supabaseClient.from('workout_ratings')
+      .select('*').eq('user_id', currentUser.id)
+      .gte('program_day', dayStart).lte('program_day', dayEnd),
+    supabaseClient.from('daily_progress')
+      .select('*').eq('user_id', currentUser.id)
+      .gte('program_day', dayStart).lte('program_day', dayEnd)
+  ]);
+
+  // Aggregate journal entries
+  var journalEntries = {};
+  (progress.data || []).forEach(function(d) {
+    if (d.journal_entries) Object.assign(journalEntries, d.journal_entries);
+  });
+
+  // Aggregate checkbox completions
+  var checkboxCompletions = {};
+  (progress.data || []).forEach(function(d) {
+    if (d.checkboxes) Object.assign(checkboxCompletions, d.checkboxes);
+  });
+
+  // Supplement compliance (count days taken)
+  var suppCompliance = {};
+  (progress.data || []).forEach(function(d) {
+    if (d.checkboxes) {
+      Object.keys(d.checkboxes).filter(function(k){ return k.startsWith('supp-'); })
+        .forEach(function(k) {
+          var name = k.replace('supp-', '');
+          suppCompliance[name] = (suppCompliance[name] || 0) + (d.checkboxes[k] ? 1 : 0);
+        });
+    }
+  });
+
+  return {
+    mealRatings: meals.data || [],
+    workoutRatings: workouts.data || [],
+    journalEntries: journalEntries,
+    checkboxCompletions: checkboxCompletions,
+    supplementCompliance: suppCompliance
+  };
+}
+
+// ── REPORT MODAL ──
+function openWeeklyReportModal() {
+  currentReportStage = 1;
+  clarificationQA = [];
+  clarificationStep = 0;
+  confirmedDirection = '';
+  renderReportStage();
+  document.getElementById('weekly-report-modal').style.display = 'flex';
+}
+
+function closeWeeklyReportModal() {
+  document.getElementById('weekly-report-modal').style.display = 'none';
+}
+
+function reportStageNext() {
+  if (currentReportStage === 1) {
+    currentReportStage = 2;
+    renderReportStage();
+  } else if (currentReportStage === 2) {
+    // Check all clarifier questions answered
+    var questions = currentWeeklyReport.clarifier_questions || [];
+    if (clarificationQA.length < questions.length) {
+      var nextQ = questions[clarificationStep];
+      if (nextQ) {
+        askNextClarifier();
+        return;
+      }
+    }
+    currentReportStage = 3;
+    renderReportStage();
+  } else if (currentReportStage === 3) {
+    buildNextPhase();
+  }
+}
+
+function reportStageBack() {
+  if (currentReportStage > 1) {
+    currentReportStage--;
+    renderReportStage();
+  }
+}
+
+function renderReportStage() {
+  // Update stage indicators
+  [1,2,3].forEach(function(n) {
+    var el = document.getElementById('report-stage-' + n);
+    if (!el) return;
+    el.style.borderColor = n === currentReportStage
+      ? 'var(--bloom)' : 'rgba(75,191,133,.08)';
+    el.style.color = n === currentReportStage
+      ? 'var(--bloom)' : 'rgba(138,175,144,.4)';
+    el.style.background = n === currentReportStage
+      ? 'rgba(61,155,106,.08)' : 'transparent';
+    el.style.fontWeight = n < currentReportStage ? '500' : 'normal';
+  });
+
+  var backBtn = document.getElementById('report-back-btn');
+  var nextBtn = document.getElementById('report-next-btn');
+  if (backBtn) backBtn.style.display = currentReportStage > 1 ? 'block' : 'none';
+
+  if (currentReportStage === 1) renderReportFindings();
+  else if (currentReportStage === 2) renderClarificationConversation();
+  else if (currentReportStage === 3) renderConfirmAndBuild();
+
+  if (nextBtn) {
+    nextBtn.textContent = currentReportStage === 1 ? 'Talk with ZenZo →'
+      : currentReportStage === 2 ? 'I have answered all questions →'
+      : 'Build Week ' + (Math.floor(((currentUserProfile.current_day||1)-1)/7) + 1) + ' ✦';
+  }
+}
+
+function renderReportFindings() {
+  if (!currentWeeklyReport) return;
+  var r = currentWeeklyReport;
+  var weekNum = r.week || 1;
+  document.getElementById('report-modal-phase-label').textContent = 'Week ' + weekNum + ' Report';
+
+  var html = '';
+
+  // Score banner
+  var score = r.completion_score || 0;
+  var scoreColor = score >= 80 ? 'var(--bloom)' : score >= 50 ? 'var(--pollen)' : 'var(--fire)';
+  html += '<div style="display:flex;align-items:center;gap:16px;padding:14px 16px;' +
+    'border:1px solid rgba(75,191,133,.15);background:rgba(61,155,106,.06);margin-bottom:16px;">';
+  html += '<div style="text-align:center;min-width:60px;">';
+  html += '<div style="font-family:Playfair Display,serif;font-size:2rem;color:' + scoreColor + ';">' + score + '%</div>';
+  html += '<div style="font-size:.55rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;">Completion</div>';
+  html += '</div>';
+  html += '<div><div style="font-size:.78rem;color:var(--cream);line-height:1.7;">' + r.overall_summary + '</div></div>';
+  html += '</div>';
+
+  // Top meals
+  if (r.top_meals && r.top_meals.length) {
+    html += sectionHeader('Your Top Meals This Week');
+    r.top_meals.forEach(function(m) {
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;' +
+        'border:1px solid rgba(75,191,133,.1);background:rgba(10,26,14,.4);margin-bottom:5px;">';
+      html += '<span style="font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;' +
+        'color:var(--muted);min-width:60px;">' + m.category + '</span>';
+      html += '<span style="flex:1;font-size:.74rem;color:var(--cream);">' + m.name + '</span>';
+      html += renderMiniStars(m.rating);
+      html += '</div>';
+    });
+  }
+
+  // Patterns observed
+  if (r.patterns_observed && r.patterns_observed.length) {
+    html += sectionHeader('Patterns ZenZo Observed');
+    r.patterns_observed.forEach(function(p) {
+      var confColor = p.confidence === 'well-established' ? 'var(--bloom)' :
+                      p.confidence === 'traditionally-supported' ? 'var(--pollen)' :
+                      p.confidence === 'emerging-evidence' ? 'var(--vata)' : 'var(--muted)';
+      html += '<div style="padding:12px 14px;border:1px solid rgba(75,191,133,.1);' +
+        'background:rgba(10,26,14,.4);margin-bottom:8px;">';
+      html += '<div style="font-size:.74rem;color:var(--cream);line-height:1.6;margin-bottom:6px;">' + p.pattern + '</div>';
+      html += '<div style="font-size:.68rem;color:var(--muted);line-height:1.6;margin-bottom:6px;">' + p.significance + '</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+      html += '<span style="font-size:.58rem;padding:2px 8px;border:1px solid ' + confColor + ';' +
+        'color:' + confColor + ';text-transform:uppercase;letter-spacing:.08em;">' + (p.confidence || 'traditional') + '</span>';
+      html += '<span style="font-size:.6rem;color:rgba(138,175,144,.5);font-style:italic;">' +
+        p.citation + (p.citation_year && p.citation_year !== 'classical' ? ', ' + p.citation_year : '') + '</span>';
+      html += '</div></div>';
+    });
+  }
+
+  // Proposed adjustments
+  if (r.adjustments_proposed && r.adjustments_proposed.length) {
+    html += sectionHeader('Proposed Adjustments for Next Week');
+    r.adjustments_proposed.forEach(function(a) {
+      html += '<div style="padding:12px 14px;border:1px solid rgba(237,184,48,.12);' +
+        'background:rgba(237,184,48,.04);margin-bottom:8px;">';
+      html += '<div style="font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;' +
+        'color:var(--pollen);margin-bottom:5px;">' + a.area + '</div>';
+      html += '<div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">' +
+        '<strong style="color:var(--cream);">Was:</strong> ' + a.current + '</div>';
+      html += '<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">' +
+        '<strong style="color:var(--cream);">Becomes:</strong> ' + a.proposed + '</div>';
+      html += '<div style="font-size:.66rem;color:var(--muted);line-height:1.6;margin-bottom:5px;">' + a.reason + '</div>';
+      html += '<div style="font-size:.6rem;color:rgba(138,175,144,.45);font-style:italic;">' +
+        a.citation + (a.citation_year ? ', ' + a.citation_year : '') + '</div>';
+      html += '</div>';
+    });
+  }
+
+  document.getElementById('report-modal-content').innerHTML = html;
+}
+
+function sectionHeader(text) {
+  return '<div style="font-size:.57rem;letter-spacing:.25em;color:var(--bloom);text-transform:uppercase;' +
+    'margin:16px 0 8px;display:flex;align-items:center;gap:8px;">' + text +
+    '<span style="flex:1;height:1px;background:rgba(75,191,133,.1);display:block;"></span></div>';
+}
+
+function renderMiniStars(rating) {
+  var html = '<div style="display:flex;gap:2px;">';
+  for (var i = 1; i <= 5; i++) {
+    html += '<span style="font-size:.7rem;color:' + (i <= rating ? 'var(--pollen)' : 'rgba(237,184,48,.15)') + ';">★</span>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ── CLARIFICATION CONVERSATION ──
+function renderClarificationConversation() {
+  if (!currentWeeklyReport) return;
+  var questions = currentWeeklyReport.clarifier_questions || [];
+  var psychRead = currentWeeklyReport.psychological_read || {};
+  var opening = currentWeeklyReport.zenzo_opening || '';
+
+  var html = '<div style="margin-bottom:14px;padding:12px 14px;' +
+    'background:rgba(237,184,48,.06);border-left:3px solid var(--pollen);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
+  html += '<span style="font-size:1rem;">✦</span>';
+  html += '<span style="font-family:Playfair Display,serif;font-size:.9rem;color:var(--cream);">ZenZo</span>';
+  html += '</div>';
+  html += '<div style="font-size:.74rem;color:var(--cream);line-height:1.8;">' + opening + '</div>';
+  html += '</div>';
+
+  if (psychRead.observed_state) {
+    html += '<div style="padding:10px 12px;border:1px solid rgba(75,191,133,.1);' +
+      'background:rgba(61,155,106,.04);margin-bottom:14px;font-size:.68rem;color:var(--muted);line-height:1.7;">';
+    html += '<strong style="color:var(--cream);">ZenZo noticed:</strong> ' + psychRead.observed_state;
+    if (psychRead.key_tension && psychRead.key_tension !== 'none identified') {
+      html += '<br><strong style="color:var(--cream);">A tension worth exploring:</strong> ' + psychRead.key_tension;
+    }
+    html += '</div>';
+  }
+
+  // Render Q&A so far
+  clarificationQA.forEach(function(qa, i) {
+    html += renderClarifierPair(qa.question, qa.answer, i + 1);
+  });
+
+  // Current question input
+  if (clarificationStep < questions.length) {
+    var q = questions[clarificationStep];
+    html += '<div style="padding:14px;border:1px solid rgba(75,191,133,.18);' +
+      'background:rgba(10,26,14,.4);margin-bottom:10px;">';
+    html += '<div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;' +
+      'color:var(--bloom);margin-bottom:6px;">Question ' + (clarificationStep+1) + ' of ' + questions.length + '</div>';
+    html += '<div style="font-size:.76rem;color:var(--cream);line-height:1.7;margin-bottom:10px;">' +
+      q.question + '</div>';
+    html += '<div style="font-size:.62rem;color:var(--muted);font-style:italic;margin-bottom:10px;">' +
+      'Why ZenZo is asking: ' + q.why_asking + '</div>';
+    html += '<textarea id="clarifier-answer-' + clarificationStep + '" rows="3" ' +
+      'placeholder="Share what comes to mind — be honest, this is private and informs your next week..." ' +
+      'style="width:100%;padding:10px 12px;background:rgba(6,13,8,.7);' +
+      'border:1px solid rgba(75,191,133,.18);color:var(--cream);font-family:DM Sans,sans-serif;' +
+      'font-size:.74rem;outline:none;resize:vertical;line-height:1.6;"></textarea>';
+    html += '<button onclick="submitClarifierAnswer()" style="margin-top:8px;padding:8px 20px;' +
+      'background:rgba(61,155,106,.15);border:1px solid rgba(75,191,133,.3);color:var(--bloom);' +
+      'font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;' +
+      'font-family:DM Sans,sans-serif;">Submit Answer →</button>';
+    html += '</div>';
+  } else {
+    // All answered
+    html += '<div style="padding:14px;border:1px solid rgba(75,191,133,.2);' +
+      'background:rgba(61,155,106,.06);text-align:center;">';
+    html += '<div style="font-size:.78rem;color:var(--cream);margin-bottom:4px;">✓ All questions answered</div>';
+    html += '<div style="font-size:.68rem;color:var(--muted);">Click "I have answered all questions" to review and confirm your direction.</div>';
+    html += '</div>';
+  }
+
+  document.getElementById('report-modal-content').innerHTML = html;
+}
+
+function renderClarifierPair(question, answer, num) {
+  return '<div style="margin-bottom:10px;">' +
+    '<div style="padding:8px 12px;background:rgba(237,184,48,.04);border-left:2px solid rgba(237,184,48,.2);' +
+    'font-size:.7rem;color:var(--muted);margin-bottom:4px;">' + question + '</div>' +
+    '<div style="padding:8px 12px;background:rgba(61,155,106,.06);border-left:2px solid rgba(75,191,133,.2);' +
+    'font-size:.73rem;color:var(--cream);line-height:1.6;">' + answer + '</div>' +
+    '</div>';
+}
+
+function askNextClarifier() {
+  var questions = currentWeeklyReport.clarifier_questions || [];
+  if (clarificationStep < questions.length) {
+    renderClarificationConversation();
+  } else {
+    currentReportStage = 3;
+    renderReportStage();
+  }
+}
+
+function submitClarifierAnswer() {
+  var textarea = document.getElementById('clarifier-answer-' + clarificationStep);
+  if (!textarea || !textarea.value.trim()) {
+    textarea.style.borderColor = 'var(--fire)';
+    return;
+  }
+  var questions = currentWeeklyReport.clarifier_questions || [];
+  clarificationQA.push({
+    question: questions[clarificationStep].question,
+    area: questions[clarificationStep].area,
+    answer: textarea.value.trim()
+  });
+  clarificationStep++;
+  renderClarificationConversation();
+  document.getElementById('report-modal-content').scrollTop = 0;
+}
+
+// ── CONFIRM & BUILD ──
+function renderConfirmAndBuild() {
+  if (!currentWeeklyReport) return;
+  var weekNum = currentWeeklyReport.week || 1;
+  var nextWeek = weekNum + 1;
+
+  // Synthesize direction from clarifications
+  var synthesizedDirection = synthesizeDirection(clarificationQA, currentWeeklyReport);
+
+  var html = '<div style="margin-bottom:16px;">';
+  html += '<div style="font-family:Playfair Display,serif;font-size:.95rem;color:var(--cream);margin-bottom:6px;">';
+  html += "ZenZo synthesis of your conversation</div>";
+  html += '<div style="padding:14px;border:1px solid rgba(237,184,48,.18);' +
+    'background:rgba(237,184,48,.05);font-size:.74rem;color:var(--cream);line-height:1.8;">';
+  html += synthesizedDirection;
+  html += '</div></div>';
+
+  html += '<div style="margin-bottom:16px;">';
+  html += '<label style="font-size:.6rem;letter-spacing:.12em;color:var(--bloom);' +
+    'text-transform:uppercase;display:block;margin-bottom:6px;">Your confirmed direction for Week ' + nextWeek + '</label>';
+  html += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;line-height:1.6;">' +
+    'Edit this or keep it as is — this becomes the stated intention that drives Week ' + nextWeek + '.</div>';
+  html += '<textarea id="confirmed-direction-input" rows="3" ' +
+    'style="width:100%;padding:10px 12px;background:rgba(6,13,8,.7);' +
+    'border:1px solid rgba(75,191,133,.2);color:var(--cream);font-family:DM Sans,sans-serif;' +
+    'font-size:.76rem;outline:none;resize:vertical;line-height:1.6;">' +
+    synthesizedDirection + '</textarea>';
+  html += '</div>';
+
+  html += '<div style="padding:12px 14px;border:1px solid rgba(75,191,133,.15);' +
+    'background:rgba(61,155,106,.05);font-size:.7rem;color:var(--muted);line-height:1.75;">';
+  html += '<strong style="color:var(--cream);">What happens next:</strong><br>';
+  html += 'ZenZo will build your Week ' + nextWeek + ' (Days ' + ((weekNum)*7+1) + '–' + (nextWeek*7) + ') ';
+  html += 'using your Week ' + weekNum + ' ratings, your journal insights, the proposed adjustments, ';
+  html += 'and everything you just expressed in this conversation. This takes 15–25 seconds.';
+  html += '</div>';
+
+  html += '<div id="build-phase-msg" style="display:none;margin-top:12px;padding:10px 12px;' +
+    'font-size:.7rem;border-left:3px solid var(--bloom);' +
+    'background:rgba(75,191,133,.06);color:var(--bloom);"></div>';
+
+  document.getElementById('report-modal-content').innerHTML = html;
+}
+
+function synthesizeDirection(qa, report) {
+  if (!qa || qa.length === 0) {
+    return 'Continue building on what worked in Week ' + (report.week||1) +
+      ', apply the suggested adjustments, and maintain current commitment level.';
+  }
+  // Simple synthesis — combine answers into a direction statement
+  var parts = qa.map(function(item) { return item.answer; });
+  var combined = parts.join(' ');
+  // Truncate if too long
+  return combined.length > 400 ? combined.substring(0, 400) + '...' : combined;
+}
+
+// ── BUILD NEXT PHASE ──
+async function buildNextPhase() {
+  var directionInput = document.getElementById('confirmed-direction-input');
+  confirmedDirection = directionInput ? directionInput.value.trim() : '';
+
+  var nextBtn = document.getElementById('report-next-btn');
+  var backBtn = document.getElementById('report-back-btn');
+  if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Building Week...'; }
+  if (backBtn) backBtn.style.display = 'none';
+
+  var msgEl = document.getElementById('build-phase-msg');
+  if (msgEl) {
+    msgEl.style.display = 'block';
+    msgEl.textContent = 'Generating your adaptive week — this takes 15–25 seconds...';
+  }
+
+  var weekNum = currentWeeklyReport ? currentWeeklyReport.week || 1 : 1;
+  var nextPhase = weekNum + 1;
+
+  if (nextPhase > 5) {
+    // Week 5 complete — trigger OJAS generation (Sprint 6)
+    if (msgEl) msgEl.textContent = 'Week 5 complete! Your OJAS generation will be available shortly.';
+    setTimeout(closeWeeklyReportModal, 2000);
+    return;
+  }
+
+  try {
+    var brief = {
+      constitution: {
+        primary: currentUserProfile.dosha_primary || 'p',
+        secondary: currentUserProfile.dosha_secondary || 'k',
+        tertiary: currentUserProfile.dosha_tertiary || 'v',
+        pitta_pct: currentUserProfile.pitta_pct || 50,
+        kapha_pct: currentUserProfile.kapha_pct || 27,
+        vata_pct: currentUserProfile.vata_pct || 23
+      },
+      focus_areas: currentIntents,
+      goal_profile: currentGoalProfile,
+      physical: currentPhysical || {},
+      lifestyle: currentLifestyle || {},
+      experience_level: currentUserProfile.quiz_answers ? (currentUserProfile.quiz_answers[47] || 'intermediate') : 'intermediate',
+      intention: currentUserProfile.quiz_answers ? (currentUserProfile.quiz_answers[48] || 'heal') : 'heal',
+      quiz_clarifiers: currentUserProfile.quiz_clarifiers || {}
+    };
+
+    var response = await fetch('/.netlify/functions/generate-phase', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        apiKey: storedApiKey,
+        model: storedModel,
+        brief: brief,
+        phase: nextPhase,
+        weeklyReport: currentWeeklyReport,
+        clarifications: clarificationQA,
+        confirmedDirection: confirmedDirection
+      })
+    });
+
+    var data = await response.json();
+    if (data.error) {
+      if (msgEl) { msgEl.style.borderColor = 'var(--fire)'; msgEl.style.color = '#F09090';
+        msgEl.style.background = 'rgba(224,85,85,.08)'; msgEl.textContent = 'Error: ' + data.error; }
+      if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Try Again'; }
+      if (backBtn) backBtn.style.display = 'block';
+      return;
+    }
+
+    // Merge new phase days into existing program_json
+    var existingProgram = currentUserProfile.program_json || {program_meta:{},days:[]};
+    var existingDays = existingProgram.days || [];
+    var newDays = data.days || [];
+
+    // Remove any existing days for this phase (in case of retry)
+    var dayStart = (nextPhase - 1) * 7 + 1;
+    var dayEnd = nextPhase * 7;
+    existingDays = existingDays.filter(function(d){ return d.day < dayStart || d.day > dayEnd; });
+    var mergedDays = existingDays.concat(newDays).sort(function(a,b){ return a.day - b.day; });
+    existingProgram.days = mergedDays;
+
+    // Save updated program + clarifications to Supabase
+    await Promise.all([
+      supabaseClient.from('profiles').update({
+        program_json: existingProgram,
+        program_status: 'phase_' + nextPhase + '_active',
+        current_day: dayStart  // advance to start of new week
+      }).eq('id', currentUser.id),
+      supabaseClient.from('weekly_reports').update({
+        clarifications_json: clarificationQA,
+        confirmed_direction: confirmedDirection
+      }).eq('user_id', currentUser.id).eq('week_number', weekNum)
+    ]);
+
+    if (currentUserProfile) {
+      currentUserProfile.program_json = existingProgram;
+      currentUserProfile.program_status = 'phase_' + nextPhase + '_active';
+      currentUserProfile.current_day = dayStart;
+    }
+
+    if (msgEl) {
+      msgEl.textContent = 'Week ' + nextPhase + ' is built and ready. Opening your program...';
+    }
+
+    setTimeout(function() {
+      closeWeeklyReportModal();
+      updateWeeklySection();
+      updateProgramStatusBlock();
+      loadWeeklyRecords();
+      // Set weekly intention
+      showWeeklyIntention(nextPhase, confirmedDirection);
+    }, 1500);
+
+  } catch(e) {
+    if (msgEl) { msgEl.style.borderColor = 'var(--fire)'; msgEl.style.color = '#F09090';
+      msgEl.textContent = 'Connection error: ' + e.message; }
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Try Again'; }
+    if (backBtn) backBtn.style.display = 'block';
+  }
+}
+
+// ── WEEKLY RECORDS ──
+async function loadWeeklyRecords() {
+  try {
+    var result = await supabaseClient.from('weekly_reports')
+      .select('*').eq('user_id', currentUser.id)
+      .order('week_number', {ascending: false});
+    if (!result.data || result.data.length === 0) {
+      document.getElementById('weekly-records-section').style.display = 'none';
+      return;
+    }
+    document.getElementById('weekly-records-section').style.display = 'block';
+    var html = '';
+    result.data.forEach(function(rec) {
+      var report = rec.report_json || {};
+      var score = report.completion_score || 0;
+      var scoreColor = score >= 80 ? 'var(--bloom)' : score >= 50 ? 'var(--pollen)' : 'var(--fire)';
+      var dateLabel = rec.week_start_date
+        ? new Date(rec.week_start_date).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+        : 'Week ' + rec.week_number;
+
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;' +
+        'border:1px solid rgba(75,191,133,.1);background:rgba(10,26,14,.3);cursor:pointer;" ' +
+        'onclick="viewPastReport(' + rec.week_number + ')">';
+      html += '<div style="text-align:center;min-width:44px;">';
+      html += '<div style="font-family:Playfair Display,serif;font-size:1.1rem;color:' + scoreColor + ';">' + score + '%</div>';
+      html += '<div style="font-size:.52rem;color:var(--muted);letter-spacing:.08em;">completion</div>';
+      html += '</div>';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-size:.74rem;color:var(--cream);font-weight:500;">Week ' + rec.week_number + ' — ' + (report.phase_name||'') + '</div>';
+      html += '<div style="font-size:.63rem;color:var(--muted);">' + dateLabel + '</div>';
+      html += '</div>';
+      html += '<div style="font-size:.6rem;color:var(--muted);">View →</div>';
+      html += '</div>';
+    });
+    document.getElementById('weekly-records-list').innerHTML = html;
+  } catch(e) {}
+}
+
+function viewPastReport(weekNum) {
+  // Load and display a past report
+  supabaseClient.from('weekly_reports')
+    .select('*').eq('user_id', currentUser.id).eq('week_number', weekNum).single()
+    .then(function(result) {
+      if (result.data && result.data.report_json) {
+        currentWeeklyReport = result.data.report_json;
+        currentReportStage = 1;
+        renderReportStage();
+        document.getElementById('weekly-report-modal').style.display = 'flex';
+        // Hide next button for past reports
+        var nextBtn = document.getElementById('report-next-btn');
+        if (nextBtn) nextBtn.style.display = 'none';
+      }
+    });
+}
+
+// ── WEEKLY INTENTION ──
+function showWeeklyIntention(weekNum, direction) {
+  // Show a brief intention-setting overlay before the user opens program
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.9);' +
+    'display:flex;align-items:center;justify-content:center;padding:24px;';
+  overlay.innerHTML = '<div style="background:#0D1F10;border:1px solid rgba(237,184,48,.25);' +
+    'padding:32px;max-width:480px;width:100%;text-align:center;">' +
+    '<div style="font-size:.6rem;letter-spacing:.3em;color:var(--pollen);text-transform:uppercase;margin-bottom:12px;">Week ' + weekNum + ' Begins</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:1.3rem;color:var(--cream);line-height:1.5;margin-bottom:12px;">' +
+    'Your intention is set</div>' +
+    '<div style="font-size:.76rem;color:var(--muted);line-height:1.8;font-style:italic;margin-bottom:20px;">' +
+    '"' + (direction.substring(0, 200)) + '"' + '</div>' +
+    '<div style="font-size:.68rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">' +
+    'ZenZo will remind you of this intention each day. Your program is ready.</div>' +
+    '<div style="display:flex;gap:10px;justify-content:center;">' +
+    '<button onclick="this.parentElement.parentElement.parentElement.remove()" ' +
+    'style="padding:11px 24px;background:linear-gradient(135deg,var(--leaf),var(--bloom));' +
+    'color:var(--cream);border:none;font-family:DM Sans,sans-serif;font-size:.68rem;' +
+    'letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-weight:500;">' +
+    'Begin Week ' + weekNum + ' →</button>' +
+    '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+// ── STORE API KEY/MODEL FROM PROGRAM BUILD FOR REPORT/PHASE USE ──
+// Hook into the existing saveGoalsSetup to also cache the key after build
+var _origBuildNextBtn = null;
+// When program build completes, store key locally for report generation
+var _origShowProgramPreview = showProgramPreview;
+showProgramPreview = function(program) {
+  _origShowProgramPreview(program);
+  // Cache API key in localStorage (encrypted-ish via btoa)
+  if (storedApiKey) {
+    localStorage.setItem('ojas_api_key', storedApiKey);
+    localStorage.setItem('ojas_model', selectedModel);
+  }
+};
 
 </script>
 
