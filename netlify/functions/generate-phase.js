@@ -18,7 +18,8 @@ exports.handler = async function(event, context) {
   try {
     const body = JSON.parse(event.body);
     const { apiKey, model, brief, phase, weeklyReport,
-            clarifications, confirmedDirection, previousPhasesSummary } = body;
+            clarifications, confirmedDirection, previousPhasesSummary,
+            half = 1 } = body;  // half=1: days 1-4, half=2: days 5-7
 
     if (!apiKey || !model || !brief || !phase) {
       return {
@@ -39,7 +40,7 @@ exports.handler = async function(event, context) {
     const systemPrompt = buildAdaptiveSystemPrompt();
     const userPrompt = buildAdaptivePhasePrompt(
       brief, phase, weeklyReport, clarifications,
-      confirmedDirection, previousPhasesSummary
+      confirmedDirection, previousPhasesSummary, half
     );
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -51,7 +52,7 @@ exports.handler = async function(event, context) {
       },
       body: JSON.stringify({
         model: model,
-        max_tokens: 4000,
+        max_tokens: 2200,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
@@ -81,7 +82,7 @@ exports.handler = async function(event, context) {
         .trim();
       result = JSON.parse(cleaned);
     } catch(e) {
-      result = buildFallbackAdaptivePhase(phase, brief);
+      result = buildFallbackAdaptivePhase(phase, brief, half);
     }
 
     return {
@@ -122,12 +123,16 @@ CRITICAL RULES:
 }
 
 function buildAdaptivePhasePrompt(brief, phase, weeklyReport,
-                                   clarifications, confirmedDirection, previousPhasesSummary) {
+                                   clarifications, confirmedDirection, previousPhasesSummary, half) {
   const phaseNames = ['','Purification & Foundation','Building Momentum',
     'Integration','Peak Practice','Consolidation'];
   const phaseName = phaseNames[phase] || 'Phase ' + phase;
-  const dayStart = (phase - 1) * 7 + 1;
-  const dayEnd = phase * 7;
+  const phaseStart = (phase - 1) * 7 + 1;
+  const phaseEnd = phase * 7;
+  // Split phase into two halves to stay under 10-sec function timeout
+  const dayStart = half === 1 ? phaseStart : phaseStart + 4;
+  const dayEnd = half === 1 ? phaseStart + 3 : phaseEnd;  // half1: 4 days, half2: 3 days
+  const totalDays = dayEnd - dayStart + 1;
   const doshaNames = {p:'Pitta', k:'Kapha', v:'Vata'};
   const primary = doshaNames[brief.constitution.primary.toLowerCase()] || brief.constitution.primary;
 
@@ -157,7 +162,7 @@ function buildAdaptivePhasePrompt(brief, phase, weeklyReport,
   const lowRatedMeals = (weeklyReport && weeklyReport.top_meals || [])
     .filter(m => m.rating <= 2).map(m => m.name);
 
-  return `Build Phase ${phase} (Days ${dayStart}–${dayEnd}: ${phaseName}) for this user.
+  return `Build Phase ${phase} Half ${half} (Days ${dayStart}–${dayEnd}, ${totalDays} days) for this user.
 
 USER CONSTITUTION: ${primary}-dominant (${brief.constitution.pitta_pct}% Pitta / ${brief.constitution.kapha_pct}% Kapha / ${brief.constitution.vata_pct}% Vata)
 DIETARY FRAMEWORK: ${brief.physical.dietaryFramework || 'omnivore'} | RESTRICTIONS: ${brief.physical.allergies || 'none'}
@@ -200,20 +205,23 @@ BUILD PHASE ${phase} GUIDED BY:
 4. What they expressed in the clarification conversation
 5. Increasing/maintaining/reducing intensity per their readiness signal: ${weeklyReport && weeklyReport.psychological_read ? weeklyReport.psychological_read.readiness_signal : 'moderate'}
 
-Return the same JSON structure as generate-program.js — 7 days (${dayStart}–${dayEnd}), all fields required.
+Return the same JSON structure — exactly ${totalDays} days (${dayStart}–${dayEnd}), all fields required.
 Each day's zenzo_intention_check must reference their confirmed direction.
 Journal prompts must pick up themes from the clarification conversation.`;
 }
 
-function buildFallbackAdaptivePhase(phase, brief) {
+function buildFallbackAdaptivePhase(phase, brief, half) {
   const phaseNames = ['','Purification & Foundation','Building Momentum',
     'Integration','Peak Practice','Consolidation'];
-  const dayStart = (phase - 1) * 7 + 1;
+  const phaseStart2 = (phase - 1) * 7 + 1;
+  const h = half || 1;
+  const dayStart = h === 1 ? phaseStart2 : phaseStart2 + 4;
+  const dayCount = h === 1 ? 4 : 3;
 
   return {
     phase: phase,
     phase_name: phaseNames[phase] || 'Phase ' + phase,
-    days: Array.from({ length: 7 }, (_, i) => ({
+    days: Array.from({ length: dayCount }, (_, i) => ({
       day: dayStart + i,
       phase: phase,
       phase_name: phaseNames[phase],
