@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OJAS · My Practice</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap');
+:root{
+  --fire:#E8921A;--gold:#D4A843;--sage:#3D9B6A;
+  --bloom:#4BBF85;--pollen:#EDB830;--cream:#F2EDD5;
+  --ink:#060D08;--muted:#8AAF90;--leaf:#2D7A4A;
+  --root:#0D1F10;--vata:#7BA7C4;--border:rgba(90,160,90,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 0%,rgba(61,155,106,.15) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 40% at 85% 20%,rgba(237,184,48,.08) 0%,transparent 50%);}
+.auth-gate{position:fixed;inset:0;z-index:999;background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+.auth-gate .logo{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;
+  color:var(--pollen);letter-spacing:.25em;}
+.loader{width:40px;height:40px;border:2px solid rgba(61,155,106,.2);
+  border-top-color:var(--bloom);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(6,13,8,.96);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:10px 20px;}
+.topbar-logo{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;
+  color:var(--pollen);letter-spacing:.2em;}
+.back-btn{padding:5px 12px;border:1px solid rgba(75,191,133,.2);background:transparent;
+  color:var(--muted);font-size:.58rem;letter-spacing:.1em;cursor:pointer;
+  font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .15s;}
+.back-btn:hover{color:var(--cream);border-color:var(--bloom);}
+.hero{padding:40px 20px 28px;text-align:center;border-bottom:1px solid var(--border);
+  position:relative;z-index:1;}
+.hero-eyebrow{font-size:.55rem;letter-spacing:.4em;color:var(--pollen);
+  text-transform:uppercase;margin-bottom:10px;}
+.hero-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:400;
+  color:var(--cream);margin-bottom:8px;line-height:1.3;}
+.hero-intention{font-size:.8rem;color:var(--muted);font-style:italic;line-height:1.8;
+  max-width:500px;margin:0 auto 16px;}
+.hero-stats{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;}
+.hero-stat{text-align:center;}
+.hero-stat .val{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--pollen);}
+.hero-stat .lbl{font-size:.52rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
+.content{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:24px 16px 60px;}
+.section-label{font-size:.55rem;letter-spacing:.3em;color:var(--bloom);text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;margin:24px 0 12px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(75,191,133,.1);}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;}
+.day-cell{padding:10px 6px;border:1px solid var(--border);background:rgba(10,26,14,.4);
+  text-align:center;}
+.day-cell .day-name{font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px;}
+.day-cell .day-type{font-size:.58rem;color:var(--cream);}
+.day-cell .day-badge{font-size:.5rem;margin-top:3px;padding:2px 5px;
+  background:rgba(61,155,106,.08);color:var(--bloom);}
+.day-cell.rest-day{background:rgba(255,255,255,.02);}
+.day-cell.rest-day .day-type{color:var(--muted);}
+.meal-category{margin-bottom:16px;}
+.meal-cat-label{font-size:.58rem;letter-spacing:.18em;color:var(--pollen);
+  text-transform:uppercase;margin-bottom:8px;}
+.meal-cards{display:flex;flex-direction:column;gap:6px;}
+.meal-item{padding:11px 14px;border:1px solid var(--border);background:rgba(10,26,14,.4);
+  display:flex;align-items:center;gap:12px;}
+.meal-item .meal-freq{font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 7px;background:rgba(61,155,106,.08);color:var(--bloom);flex-shrink:0;}
+.meal-item .meal-name{flex:1;font-size:.76rem;color:var(--cream);font-weight:500;}
+.meal-item .meal-why{font-size:.62rem;color:var(--muted);line-height:1.5;}
+.star-display{display:flex;gap:2px;}
+.star-display span{font-size:.7rem;color:var(--pollen);}
+.supp-item{display:flex;align-items:center;gap:12px;padding:10px 12px;
+  border:1px solid var(--border);background:rgba(10,26,14,.3);margin-bottom:5px;}
+.supp-item .supp-name{flex:1;font-size:.74rem;color:var(--cream);}
+.supp-item .supp-meta{font-size:.62rem;color:var(--muted);}
+.supp-item .compliance-bar{width:60px;height:4px;background:rgba(255,255,255,.06);overflow:hidden;}
+.supp-item .compliance-fill{height:100%;background:var(--bloom);}
+.protocol-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;
+  border:1px solid rgba(75,191,133,.06);margin-bottom:4px;}
+.protocol-num{width:18px;height:18px;border:1px solid rgba(75,191,133,.2);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;color:var(--muted);}
+.protocol-text{flex:1;font-size:.72rem;color:var(--muted);}
+.protocol-note{font-size:.62rem;color:rgba(138,175,144,.5);width:100%;padding-left:28px;}
+.principle-item{padding:10px 14px;border-left:2px solid rgba(75,191,133,.25);
+  background:rgba(61,155,106,.04);margin-bottom:6px;font-size:.72rem;
+  color:var(--muted);line-height:1.7;font-style:italic;}
+.seasonal-note{padding:14px 16px;border:1px solid rgba(237,184,48,.15);
+  background:rgba(237,184,48,.04);font-size:.72rem;color:var(--muted);line-height:1.8;}
+.print-btn{position:fixed;bottom:20px;right:16px;padding:10px 20px;
+  background:linear-gradient(135deg,var(--pollen),var(--fire));color:var(--root);
+  border:none;font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;font-weight:600;
+  box-shadow:0 6px 20px rgba(237,184,48,.3);z-index:99;}
+@media print{.topbar,.print-btn{display:none;}body::before{display:none;}}
+@media(max-width:600px){.week-grid{grid-template-columns:repeat(4,1fr);}}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="auth-gate">
+  <div class="logo">OJAS</div>
+  <div class="loader"></div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <div class="topbar">
+    <div class="topbar-logo">✦ OJAS</div>
+    <a href="/dashboard.html" class="back-btn">← Dashboard</a>
+  </div>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Your Lived Practice</div>
+    <div class="hero-title" id="practice-title">Loading your OJAS...</div>
+    <div class="hero-intention" id="practice-intention"></div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val" id="stat-completion">—</div><div class="lbl">35-day completion</div></div>
+      <div class="hero-stat"><div class="val" id="stat-xp">—</div><div class="lbl">XP earned</div></div>
+      <div class="hero-stat"><div class="val" id="stat-streak">—</div><div class="lbl">Best streak</div></div>
+      <div class="hero-stat"><div class="val" id="stat-date">—</div><div class="lbl">Generated</div></div>
+    </div>
+  </div>
+
+  <div class="content" id="practice-content"></div>
+
+</div>
+
+<button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+
+<script>
+var SUPABASE_URL = 'https://kxucvbysrfclcbojemti.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4dWN2YnlzcmZjbGNib2plbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5Mzk2MDgsImV4cCI6MjA5NjUxNTYwOH0.bYp1UfjE_gxeCULdaqTgbhjlxEDMC2eX9WwXXxC0yGU';
+var supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+window.addEventListener('load', async function() {
+  try {
+    var session = await supa.auth.getSession();
+    if (!session.data.session) { window.location.href = '/login.html'; return; }
+    await loadOjasPractice();
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } catch(e) { window.location.href = '/login.html'; }
+});
+
+async function loadOjasPractice() {
+  var result = await supa.from('ojas_practice')
+    .select('*').eq('user_id', (await supa.auth.getUser()).data.user.id)
+    .eq('is_current', true).single();
+  if (!result.data) {
+    document.getElementById('practice-content').innerHTML =
+      '<div style="text-align:center;padding:40px 20px;">' +
+      '<div style="font-size:.8rem;color:var(--muted);">Your OJAS practice has not been generated yet.</div>' +
+      '<a href="/dashboard.html" style="display:inline-block;margin-top:16px;padding:10px 20px;' +
+      'border:1px solid rgba(75,191,133,.2);color:var(--bloom);text-decoration:none;font-size:.68rem;">Go to Dashboard</a>' +
+      '</div>';
+    return;
+  }
+  renderOjas(result.data.practice_json);
+}
+
+function renderOjas(p) {
+  var meta = p.practice_meta || {};
+
+  // Hero
+  document.getElementById('practice-title').textContent = meta.ojas_title || 'My Living Practice';
+  document.getElementById('practice-intention').textContent = meta.ojas_intention || '';
+  document.getElementById('stat-completion').textContent = (meta.program_completion || 0) + '%';
+  document.getElementById('stat-xp').textContent = (meta.total_xp_earned || 0).toLocaleString();
+  document.getElementById('stat-streak').textContent = (meta.days_streaked || 0) + 'd';
+  document.getElementById('stat-date').textContent = meta.generated_date
+    ? new Date(meta.generated_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : '—';
+
+  var html = '';
+
+  // Morning ritual
+  if (p.morning_ritual && p.morning_ritual.length) {
+    html += sectionLabel('Morning Ritual');
+    html += '<div style="display:flex;flex-direction:column;gap:5px;">';
+    p.morning_ritual.forEach(function(step, i) {
+      html += '<div class="protocol-row">';
+      html += '<div class="protocol-num">' + (i+1) + '</div>';
+      html += '<div style="flex:1;"><div class="protocol-text">' + step.step;
+      if (step.duration) html += ' <span style="color:var(--muted);">· ' + step.duration + '</span>';
+      html += '</div>';
+      if (step.note) html += '<div class="protocol-note">' + step.note + '</div>';
+      html += '</div>';
+      if (step.days && step.days !== 'daily') {
+        html += '<span style="font-size:.55rem;color:var(--muted);letter-spacing:.08em;">' + step.days + '</span>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Weekly movement schedule
+  if (p.movement_schedule && p.movement_schedule.days) {
+    html += sectionLabel('Weekly Movement Schedule');
+    html += '<div style="font-size:.67rem;color:var(--muted);margin-bottom:10px;">' +
+      (p.movement_schedule.weekly_structure || '') + '</div>';
+    html += '<div class="week-grid">';
+    var dayColors = {strength:'rgba(232,146,26,.08)',yoga:'rgba(61,155,106,.08)',
+      cardio:'rgba(123,167,196,.08)',mobility:'rgba(75,191,133,.06)',rest:'transparent'};
+    (p.movement_schedule.days || []).forEach(function(d) {
+      var isRest = d.workout_type === 'rest';
+      html += '<div class="day-cell' + (isRest ? ' rest-day' : '') + '" ' +
+        'style="background:' + (dayColors[d.workout_type] || 'rgba(10,26,14,.4)') + ';">';
+      html += '<div class="day-name">' + d.day.substring(0,3) + '</div>';
+      html += '<div class="day-type">' + (isRest ? 'Rest' : d.name || d.workout_type) + '</div>';
+      if (!isRest && d.duration) html += '<div class="day-badge">' + d.duration + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    if (p.movement_principles && p.movement_principles.length) {
+      p.movement_principles.forEach(function(pr) {
+        html += '<div class="principle-item">' + pr + '</div>';
+      });
+    }
+  }
+
+  // Meal rotation
+  if (p.meal_rotation) {
+    html += sectionLabel('Meal Rotation');
+    var cats = [
+      {key:'breakfast',label:'Breakfast',icon:'🌅'},
+      {key:'lunch',label:'Lunch',icon:'☀️'},
+      {key:'snack',label:'Snack',icon:'🍃'},
+      {key:'dinner',label:'Dinner',icon:'🌙'}
+    ];
+    cats.forEach(function(cat) {
+      var meals = p.meal_rotation[cat.key] || [];
+      if (!meals.length) return;
+      html += '<div class="meal-category">';
+      html += '<div class="meal-cat-label">' + cat.icon + ' ' + cat.label + '</div>';
+      html += '<div class="meal-cards">';
+      meals.forEach(function(m) {
+        html += '<div class="meal-item">';
+        html += '<span class="meal-freq">' + (m.frequency || 'weekly') + '</span>';
+        html += '<div style="flex:1;">';
+        html += '<div class="meal-name">' + m.name + '</div>';
+        if (m.why_it_works) html += '<div class="meal-why">' + m.why_it_works + '</div>';
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+    });
+    if (p.nutrition_principles && p.nutrition_principles.length) {
+      p.nutrition_principles.forEach(function(pr) {
+        html += '<div class="principle-item">' + pr + '</div>';
+      });
+    }
+  }
+
+  // Supplement protocol
+  if (p.supplement_protocol && p.supplement_protocol.length) {
+    html += sectionLabel('Supplement Protocol');
+    p.supplement_protocol.forEach(function(s) {
+      if (!s.keep) return;
+      var compliance = Math.round((s.compliance_days || 0) / 35 * 100);
+      html += '<div class="supp-item">';
+      html += '<div style="font-size:.9rem;">' + (compliance >= 80 ? '✓' : '◌') + '</div>';
+      html += '<div style="flex:1;"><div class="supp-name">' + s.name + '</div>';
+      html += '<div class="supp-meta">' + (s.dose||'') + (s.timing ? ' · ' + s.timing : '') + '</div>';
+      if (s.note) html += '<div class="supp-meta" style="font-style:italic;">' + s.note + '</div>';
+      html += '</div>';
+      html += '<div style="text-align:right;">';
+      html += '<div class="compliance-bar"><div class="compliance-fill" style="width:' + compliance + '%;"></div></div>';
+      html += '<div style="font-size:.55rem;color:var(--muted);margin-top:2px;">' + compliance + '% compliance</div>';
+      html += '</div></div>';
+    });
+  }
+
+  // Skincare protocol
+  if (p.skincare_protocol) {
+    html += sectionLabel('Skincare Protocol');
+    ['am','pm'].forEach(function(time) {
+      var steps = p.skincare_protocol[time] || [];
+      if (!steps.length) return;
+      html += '<div style="font-size:.58rem;letter-spacing:.15em;color:var(--muted);' +
+        'text-transform:uppercase;margin-bottom:6px;">' + time.toUpperCase() + '</div>';
+      steps.forEach(function(step, i) {
+        html += '<div class="protocol-row">';
+        html += '<div class="protocol-num">' + (i+1) + '</div>';
+        html += '<div style="flex:1;"><div class="protocol-text">' + step.step;
+        if (step.product_type) html += ' <span style="color:rgba(138,175,144,.5);">· ' + step.product_type + '</span>';
+        html += '</div>';
+        if (step.note) html += '<div class="protocol-note">' + step.note + '</div>';
+        html += '</div></div>';
+      });
+      html += '<div style="height:8px;"></div>';
+    });
+  }
+
+  // Evening ritual
+  if (p.evening_ritual && p.evening_ritual.length) {
+    html += sectionLabel('Evening Ritual');
+    p.evening_ritual.forEach(function(step, i) {
+      html += '<div class="protocol-row">';
+      html += '<div class="protocol-num">' + (i+1) + '</div>';
+      html += '<div style="flex:1;"><div class="protocol-text">' + step.step;
+      if (step.duration) html += ' <span style="color:var(--muted);">· ' + step.duration + '</span>';
+      html += '</div>';
+      if (step.note) html += '<div class="protocol-note">' + step.note + '</div>';
+      html += '</div></div>';
+    });
+  }
+
+  // Weekly ZenZo check-in
+  if (p.weekly_zenzo_checkin) {
+    html += sectionLabel('Weekly Reflection');
+    html += '<div style="padding:14px 16px;border:1px solid rgba(237,184,48,.18);' +
+      'background:rgba(237,184,48,.04);">';
+    html += '<div style="font-size:.58rem;letter-spacing:.15em;color:var(--pollen);' +
+      'text-transform:uppercase;margin-bottom:6px;">Every ' + (p.weekly_zenzo_checkin.day || 'Sunday') + '</div>';
+    html += '<div style="font-size:.76rem;color:var(--cream);line-height:1.8;font-style:italic;">' +
+      p.weekly_zenzo_checkin.prompt + '</div>';
+    html += '</div>';
+  }
+
+  // Seasonal note
+  if (p.seasonal_note) {
+    html += sectionLabel('Seasonal Awareness');
+    html += '<div class="seasonal-note">' + p.seasonal_note + '</div>';
+  }
+
+  document.getElementById('practice-content').innerHTML = html;
+}
+
+function sectionLabel(text) {
+  return '<div class="section-label">' + text + '</div>';
+}
+</script>
+</body>
+</html>
