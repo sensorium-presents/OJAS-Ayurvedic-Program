@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OJAS · My Program</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap');
+:root{
+  --fire:#E8921A;--gold:#D4A843;--sage:#3D9B6A;
+  --bloom:#4BBF85;--pollen:#EDB830;--cool:#5A96B8;
+  --cream:#F2EDD5;--ink:#060D08;--muted:#8AAF90;
+  --leaf:#2D7A4A;--root:#0D1F10;--vata:#7BA7C4;
+  --border:rgba(90,160,90,.12);--err:#E05555;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 0%,rgba(61,155,106,.15) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 85% 15%,rgba(232,146,26,.1) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 100%,rgba(123,167,196,.08) 0%,transparent 55%);}
+
+/* ── AUTH GATE ── */
+.auth-gate{position:fixed;inset:0;z-index:999;background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+.auth-gate .logo{font-family:'Playfair Display',serif;font-size:2.5rem;
+  font-weight:700;color:var(--pollen);letter-spacing:.25em;}
+.auth-gate .tagline{font-size:.6rem;letter-spacing:.35em;color:var(--bloom);text-transform:uppercase;}
+.auth-gate .loader{width:40px;height:40px;border:2px solid rgba(61,155,106,.2);
+  border-top-color:var(--bloom);border-radius:50%;animation:spin .8s linear infinite;margin-top:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(6,13,8,.96);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:10px 20px;}
+.topbar-logo{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;
+  color:var(--pollen);letter-spacing:.2em;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.xp-display{font-size:.58rem;color:var(--pollen);letter-spacing:.1em;}
+.streak-display{font-size:.58rem;color:var(--bloom);letter-spacing:.1em;}
+.back-btn{padding:5px 12px;border:1px solid rgba(75,191,133,.2);background:transparent;
+  color:var(--muted);font-size:.58rem;letter-spacing:.1em;cursor:pointer;
+  font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;gap:5px;}
+.back-btn:hover{color:var(--cream);border-color:var(--bloom);}
+
+/* ── DAY NAV ── */
+.day-nav{background:rgba(10,26,14,.7);border-bottom:1px solid var(--border);
+  padding:12px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:41px;z-index:99;}
+.day-nav-prev,.day-nav-next{width:28px;height:28px;border:1px solid rgba(75,191,133,.2);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:.75rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.day-nav-prev:hover,.day-nav-next:hover{border-color:var(--bloom);color:var(--cream);}
+.day-nav-prev:disabled,.day-nav-next:disabled{opacity:.3;cursor:not-allowed;}
+.day-info{flex:1;}
+.day-number{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);font-weight:400;}
+.day-phase{font-size:.58rem;letter-spacing:.15em;color:var(--bloom);text-transform:uppercase;}
+.day-progress-track{width:100px;height:3px;background:rgba(255,255,255,.06);flex-shrink:0;}
+.day-progress-fill{height:100%;background:linear-gradient(90deg,var(--leaf),var(--bloom));transition:width .4s;}
+.day-pct-label{font-size:.55rem;color:var(--muted);flex-shrink:0;}
+
+/* ── MAIN CONTENT ── */
+.program-content{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:20px 16px 100px;}
+
+/* ── SECTION LABELS ── */
+.section-label{font-size:.55rem;letter-spacing:.3em;color:var(--bloom);text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;margin:22px 0 10px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(75,191,133,.1);}
+
+/* ── MODULE CARDS ── */
+.module-card{border:1px solid var(--border);background:rgba(10,26,14,.4);
+  margin-bottom:10px;transition:border-color .2s;}
+.module-card.completed{border-color:rgba(75,191,133,.25);background:rgba(61,155,106,.04);}
+.module-header{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.module-icon{font-size:1.1rem;flex-shrink:0;}
+.module-title{flex:1;font-size:.78rem;color:var(--cream);font-weight:500;}
+.module-meta{font-size:.62rem;color:var(--muted);}
+.module-check{width:22px;height:22px;border:1px solid rgba(75,191,133,.2);
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:transparent;flex-shrink:0;transition:all .2s;}
+.module-check.checked{background:var(--bloom);border-color:var(--bloom);color:var(--root);}
+.module-body{padding:0 14px 14px;display:none;}
+.module-body.open{display:block;}
+.module-note{font-size:.68rem;color:var(--muted);line-height:1.75;font-style:italic;
+  padding:8px 10px;border-left:2px solid rgba(75,191,133,.2);margin-bottom:10px;}
+
+/* ── CHECKLIST STEPS ── */
+.step-list{display:flex;flex-direction:column;gap:6px;}
+.step-item{display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border:1px solid rgba(75,191,133,.08);cursor:pointer;transition:all .15s;}
+.step-item:hover{border-color:rgba(75,191,133,.2);}
+.step-item.done{background:rgba(61,155,106,.06);border-color:rgba(75,191,133,.18);}
+.step-dot{width:18px;height:18px;border:1px solid rgba(75,191,133,.25);
+  border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;color:transparent;transition:all .2s;}
+.step-item.done .step-dot{background:var(--bloom);border-color:var(--bloom);color:var(--root);}
+.step-text{flex:1;font-size:.72rem;color:var(--muted);}
+.step-item.done .step-text{color:var(--cream);}
+.step-duration{font-size:.6rem;color:var(--muted);white-space:nowrap;}
+.step-note{font-size:.62rem;color:rgba(138,175,144,.6);width:100%;padding-left:28px;
+  margin-top:2px;line-height:1.5;}
+
+/* ── MEAL CARDS ── */
+.meal-card{border:1px solid var(--border);background:rgba(10,26,14,.4);margin-bottom:10px;}
+.meal-header{padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.meal-type-badge{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:2px 8px;background:rgba(61,155,106,.1);color:var(--bloom);flex-shrink:0;}
+.meal-name{flex:1;font-size:.82rem;color:var(--cream);font-weight:500;}
+.meal-dosha-badge{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 8px;flex-shrink:0;}
+.meal-dosha-badge.pitta{background:rgba(232,146,26,.1);color:var(--fire);}
+.meal-dosha-badge.kapha{background:rgba(61,155,106,.1);color:var(--bloom);}
+.meal-dosha-badge.vata{background:rgba(123,167,196,.1);color:var(--vata);}
+.meal-dosha-badge.tridoshic{background:rgba(255,255,255,.06);color:var(--muted);}
+.meal-body{padding:0 14px 14px;}
+.meal-meta-row{display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+.meal-meta-item{font-size:.62rem;color:var(--muted);}
+.meal-meta-item strong{color:var(--cream);}
+.ingredient-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.ingredient-tag{padding:3px 9px;border:1px solid rgba(75,191,133,.12);
+  font-size:.6rem;color:var(--muted);background:rgba(10,26,14,.4);}
+.meal-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.swap-btn{padding:7px 14px;border:1px solid rgba(75,191,133,.2);background:transparent;
+  color:var(--muted);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.swap-btn:hover{border-color:var(--bloom);color:var(--bloom);}
+
+/* ── STAR RATING ── */
+.star-rating{display:flex;align-items:center;gap:4px;}
+.star-rating .star{font-size:1.1rem;cursor:pointer;color:rgba(237,184,48,.2);transition:color .1s;line-height:1;}
+.star-rating .star.lit{color:var(--pollen);}
+.star-rating .star:hover{color:var(--pollen);}
+.rated-label{font-size:.6rem;color:var(--muted);margin-left:6px;}
+
+/* ── WORKOUT CARD ── */
+.workout-card{border:1px solid var(--border);background:rgba(10,26,14,.4);margin-bottom:10px;}
+.workout-header{padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.workout-type-badge{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:2px 8px;background:rgba(237,184,48,.08);color:var(--pollen);flex-shrink:0;}
+.workout-name{flex:1;font-size:.82rem;color:var(--cream);font-weight:500;}
+.workout-body{padding:0 14px 14px;}
+.exercise-list{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.exercise-item{display:flex;align-items:center;gap:10px;padding:7px 10px;
+  border:1px solid rgba(237,184,48,.08);cursor:pointer;transition:all .15s;}
+.exercise-item:hover{border-color:rgba(237,184,48,.2);}
+.exercise-item.done{background:rgba(237,184,48,.04);border-color:rgba(237,184,48,.18);}
+.exercise-dot{width:16px;height:16px;border:1px solid rgba(237,184,48,.25);
+  border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:.5rem;color:transparent;transition:all .2s;}
+.exercise-item.done .exercise-dot{background:var(--pollen);border-color:var(--pollen);color:var(--root);}
+.exercise-name{flex:1;font-size:.7rem;color:var(--muted);}
+.exercise-item.done .exercise-name{color:var(--cream);}
+.modify-btn{padding:7px 14px;border:1px solid rgba(237,184,48,.2);background:transparent;
+  color:var(--muted);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.modify-btn:hover{border-color:var(--pollen);color:var(--pollen);}
+
+/* ── SUPPLEMENT TRACKER ── */
+.supp-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;
+  border:1px solid rgba(75,191,133,.08);margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.supp-item.done{background:rgba(61,155,106,.05);border-color:rgba(75,191,133,.18);}
+.supp-dot{width:18px;height:18px;border:1px solid rgba(75,191,133,.25);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;color:transparent;margin-top:1px;transition:all .2s;}
+.supp-item.done .supp-dot{background:var(--bloom);border-color:var(--bloom);color:var(--root);}
+.supp-info{flex:1;}
+.supp-name{font-size:.75rem;color:var(--cream);font-weight:500;}
+.supp-meta{font-size:.62rem;color:var(--muted);line-height:1.6;}
+.supp-stock{font-size:.58rem;color:var(--muted);text-align:right;}
+.supp-stock.low{color:var(--fire);}
+
+/* ── PROTOCOL STEPS (skin/hair/oral) ── */
+.protocol-step{display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border:1px solid rgba(75,191,133,.06);margin-bottom:5px;cursor:pointer;transition:all .15s;}
+.protocol-step.done{background:rgba(61,155,106,.05);border-color:rgba(75,191,133,.15);}
+.protocol-num{width:18px;height:18px;border:1px solid rgba(75,191,133,.2);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;color:var(--muted);transition:all .2s;}
+.protocol-step.done .protocol-num{background:var(--bloom);border-color:var(--bloom);color:var(--root);}
+.protocol-text{flex:1;font-size:.72rem;color:var(--muted);}
+.protocol-step.done .protocol-text{color:var(--cream);}
+.protocol-note{font-size:.62rem;color:rgba(138,175,144,.55);width:100%;padding-left:28px;}
+
+/* ── JOURNAL PROMPT ── */
+.journal-card{padding:16px;border:1px solid rgba(237,184,48,.15);background:rgba(237,184,48,.04);margin-bottom:10px;}
+.journal-prompt-text{font-size:.8rem;color:var(--cream);line-height:1.75;font-style:italic;margin-bottom:12px;}
+.journal-textarea{width:100%;min-height:80px;padding:10px 12px;background:rgba(6,13,8,.7);
+  border:1px solid rgba(237,184,48,.15);color:var(--cream);font-family:'DM Sans',sans-serif;
+  font-size:.75rem;outline:none;resize:vertical;line-height:1.6;}
+.journal-textarea:focus{border-color:var(--pollen);}
+.journal-textarea::placeholder{color:rgba(138,175,144,.35);}
+.journal-save-btn{margin-top:8px;padding:7px 18px;border:1px solid rgba(237,184,48,.2);
+  background:transparent;color:var(--pollen);font-size:.62rem;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.journal-save-btn:hover{background:rgba(237,184,48,.08);}
+
+/* ── ZENZO DAILY CARD ── */
+.zenzo-daily{padding:14px 16px;border:1px solid rgba(237,184,48,.18);
+  background:linear-gradient(135deg,rgba(20,50,28,.5),rgba(10,26,14,.7));margin-bottom:10px;}
+.zenzo-quote{font-size:.75rem;color:var(--cream);line-height:1.8;font-style:italic;margin-bottom:8px;}
+.zenzo-intention{font-size:.68rem;color:var(--muted);line-height:1.6;}
+.zenzo-mini-btn{margin-top:10px;padding:6px 14px;border:1px solid rgba(237,184,48,.25);
+  background:transparent;color:var(--pollen);font-size:.6rem;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.zenzo-mini-btn:hover{background:rgba(237,184,48,.08);}
+
+/* ── XP TOAST ── */
+.xp-toast{position:fixed;bottom:70px;right:16px;z-index:9999;
+  background:linear-gradient(135deg,var(--leaf),var(--bloom));color:var(--cream);
+  padding:8px 16px;font-size:.68rem;letter-spacing:.12em;
+  box-shadow:0 6px 20px rgba(61,155,106,.4);
+  opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+.xp-toast.show{opacity:1;transform:translateY(0);}
+
+/* ── DAY COMPLETE BANNER ── */
+.day-complete-banner{display:none;padding:20px;border:1px solid rgba(75,191,133,.3);
+  background:linear-gradient(135deg,rgba(20,50,28,.9),rgba(10,26,14,.8));
+  text-align:center;margin:20px 0;}
+.day-complete-banner.show{display:block;}
+.dcb-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--cream);margin-bottom:6px;}
+.dcb-sub{font-size:.72rem;color:var(--muted);line-height:1.7;}
+
+/* ── ZENZO SWAP/MODIFY PANEL ── */
+.zenzo-panel-overlay{display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.85);}
+.zenzo-panel-overlay.open{display:flex;align-items:flex-end;justify-content:center;}
+.zenzo-panel-sheet{background:#0D1F10;border:1px solid rgba(237,184,48,.2);
+  width:100%;max-width:640px;max-height:75vh;overflow-y:auto;padding:0;}
+.zps-header{padding:14px 18px;border-bottom:1px solid rgba(237,184,48,.12);
+  display:flex;align-items:center;justify-content:space-between;}
+.zps-title{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--cream);}
+.zps-close{background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;}
+.zps-messages{padding:14px 18px;display:flex;flex-direction:column;gap:10px;min-height:120px;}
+.zps-input-row{padding:12px 18px;border-top:1px solid rgba(237,184,48,.1);display:flex;gap:8px;}
+.zps-input{flex:1;padding:10px 12px;background:rgba(6,13,8,.8);
+  border:1px solid rgba(237,184,48,.18);color:var(--cream);
+  font-family:'DM Sans',sans-serif;font-size:.75rem;outline:none;}
+.zps-send{padding:10px 20px;background:linear-gradient(135deg,var(--pollen),var(--fire));
+  color:var(--root);border:none;font-size:.65rem;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
+
+/* ── BOTTOM PROGRESS BAR ── */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(6,13,8,.96);backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;gap:12px;}
+.progress-summary{flex:1;font-size:.62rem;color:var(--muted);}
+.progress-summary strong{color:var(--cream);}
+.tasks-count{font-size:.7rem;color:var(--bloom);font-weight:500;}
+
+@media(max-width:600px){
+  .day-nav{padding:10px 12px;gap:10px;}
+  .program-content{padding:16px 12px 100px;}
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+
+<!-- ══ AUTH GATE ══ -->
+<div class="auth-gate" id="auth-gate">
+  <div class="logo">OJAS</div>
+  <div class="tagline">Loading your program</div>
+  <div class="loader"></div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none;">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">🌿 OJAS</div>
+    <div class="topbar-right">
+      <span class="streak-display" id="streak-display">🔥 0d</span>
+      <span class="xp-display" id="xp-display">0 XP</span>
+      <a href="/dashboard.html" class="back-btn">← Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Day navigation -->
+  <div class="day-nav">
+    <button class="day-nav-prev" id="prev-day-btn" onclick="navigateDay(-1)">←</button>
+    <div class="day-info">
+      <div class="day-number">Day <span id="day-number-display">1</span> of 35</div>
+      <div class="day-phase" id="day-phase-display">Phase 1 — Purification & Foundation</div>
+    </div>
+    <div class="day-progress-track">
+      <div class="day-progress-fill" id="day-progress-fill" style="width:3%;"></div>
+    </div>
+    <span class="day-pct-label" id="day-pct-label">3%</span>
+    <button class="day-nav-next" id="next-day-btn" onclick="navigateDay(1)">→</button>
+  </div>
+
+  <!-- Program content -->
+  <div class="program-content" id="program-content">
+
+    <!-- ZenZo daily quote + intention -->
+    <div class="zenzo-daily" id="zenzo-daily-card">
+      <div class="zenzo-daily-header" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:.9rem;">✦</span>
+        <span style="font-size:.58rem;letter-spacing:.2em;color:var(--pollen);text-transform:uppercase;">ZenZo · Today</span>
+      </div>
+      <div class="zenzo-quote" id="zenzo-daily-quote">Loading your daily wisdom...</div>
+      <div class="zenzo-intention" id="zenzo-daily-intention"></div>
+      <button class="zenzo-mini-btn" onclick="openZenZoPanel('general')">Ask ZenZo →</button>
+    </div>
+
+    <!-- ── MORNING RITUAL ── -->
+    <div class="section-label">☀️ Morning Ritual</div>
+    <div id="morning-ritual-container"></div>
+
+    <!-- ── MEALS ── -->
+    <div class="section-label">🍽️ Meals</div>
+    <div id="meals-container"></div>
+
+    <!-- ── MOVEMENT ── -->
+    <div class="section-label">💪 Movement</div>
+    <div id="movement-container"></div>
+
+    <!-- ── SUPPLEMENTS ── -->
+    <div class="section-label">🌿 Supplements</div>
+    <div id="supplements-container"></div>
+
+    <!-- ── SKINCARE AM/PM ── -->
+    <div class="section-label">✨ Skincare & Body</div>
+    <div id="skincare-container"></div>
+
+    <!-- ── ORAL CARE ── -->
+    <div class="section-label" id="oral-section-label" style="display:none;">😁 Oral Care</div>
+    <div id="oral-container"></div>
+
+    <!-- ── EVENING RITUAL ── -->
+    <div class="section-label">🌙 Evening Ritual</div>
+    <div id="evening-container"></div>
+
+    <!-- ── JOURNAL ── -->
+    <div class="section-label">📖 Daily Journal</div>
+    <div class="journal-card">
+      <div class="journal-prompt-text" id="journal-prompt-text">Loading today's prompt...</div>
+      <textarea class="journal-textarea" id="journal-textarea"
+        placeholder="Write freely — this is your private space..."
+        onchange="markJournalDirty()"></textarea>
+      <button class="journal-save-btn" onclick="saveJournalEntry()">Save Entry ✓</button>
+      <div id="journal-saved-msg" style="display:none;font-size:.62rem;color:var(--bloom);margin-top:6px;">✓ Saved</div>
+    </div>
+
+    <!-- Day complete banner -->
+    <div class="day-complete-banner" id="day-complete-banner">
+      <div class="dcb-title" id="dcb-title">Day complete ✦</div>
+      <div class="dcb-sub" id="dcb-sub">You showed up. That is the whole practice.</div>
+    </div>
+
+  </div>
+
+  <!-- Bottom progress bar -->
+  <div class="bottom-bar">
+    <div class="progress-summary">
+      <strong id="tasks-done-count">0</strong> / <span id="tasks-total-count">0</span> tasks today
+    </div>
+    <div class="tasks-count" id="tasks-pct">0%</div>
+  </div>
+
+</div>
+
+<!-- XP Toast -->
+<div class="xp-toast" id="xp-toast">+10 XP</div>
+
+<!-- ZenZo Swap/Modify Panel -->
+<div class="zenzo-panel-overlay" id="zenzo-panel-overlay" onclick="closeZenZoPanel(event)">
+  <div class="zenzo-panel-sheet">
+    <div class="zps-header">
+      <div class="zps-title" id="zps-title">✦ ZenZo</div>
+      <button class="zps-close" onclick="closeZenZoPanelDirect()">✕</button>
+    </div>
+    <div class="zps-messages" id="zps-messages"></div>
+    <div class="zps-input-row">
+      <input type="text" class="zps-input" id="zps-input"
+        placeholder="Tell ZenZo what you need..."
+        onkeydown="if(event.key==='Enter')sendZPSMessage()">
+      <button class="zps-send" onclick="sendZPSMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// OJAS PROGRAM — CORE
+// ══════════════════════════════════════════════════════════════
+var SUPABASE_URL = 'https://kxucvbysrfclcbojemti.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4dWN2YnlzcmZjbGNib2plbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5Mzk2MDgsImV4cCI6MjA5NjUxNTYwOH0.bYp1UfjE_gxeCULdaqTgbhjlxEDMC2eX9WwXXxC0yGU';
+var supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+var currentUser = null;
+var userProfile = null;
+var programJson = null;
+var currentDay = 1;
+var dayData = null;
+var checkState = {};   // {key: bool}
+var journalDirty = false;
+var supplementStock = {};  // {name: count}
+var totalTasksToday = 0;
+var doneTasksToday = 0;
+
+// ── BOOT ──
+window.addEventListener('load', async function() {
+  try {
+    var session = await supa.auth.getSession();
+    if (!session.data.session) {
+      window.location.href = '/login.html';
+      return;
+    }
+    currentUser = session.data.session.user;
+    await loadUserData();
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } catch(e) {
+    window.location.href = '/login.html';
+  }
+});
+
+async function loadUserData() {
+  var result = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (!result.data) return;
+  userProfile = result.data;
+
+  // XP + streak display
+  document.getElementById('xp-display').textContent = (userProfile.xp || 0) + ' XP';
+  document.getElementById('streak-display').textContent = '🔥 ' + (userProfile.streak_days || 0) + 'd';
+
+  // Program
+  programJson = userProfile.program_json;
+  if (!programJson || !programJson.days || programJson.days.length === 0) {
+    showNoProgramState();
+    return;
+  }
+
+  // Supplement stock
+  var stockResult = await supa.from('supplement_inventory').select('*').eq('user_id', currentUser.id);
+  if (stockResult.data) {
+    stockResult.data.forEach(function(s) { supplementStock[s.supplement_name] = s; });
+  }
+
+  // Load today's check state
+  currentDay = userProfile.current_day || 1;
+  await loadDayCheckState(currentDay);
+  renderDay(currentDay);
+}
+
+async function loadDayCheckState(day) {
+  var result = await supa.from('daily_progress')
+    .select('checkboxes, journal_entries')
+    .eq('user_id', currentUser.id)
+    .eq('program_day', day)
+    .single();
+  if (result.data && result.data.checkboxes) {
+    checkState = result.data.checkboxes;
+  } else {
+    checkState = {};
+  }
+  if (result.data && result.data.journal_entries) {
+    var entry = result.data.journal_entries[day];
+    if (entry && document.getElementById('journal-textarea')) {
+      document.getElementById('journal-textarea').value = entry;
+    }
+  }
+}
+
+// ── DAY NAVIGATION ──
+function navigateDay(delta) {
+  var newDay = currentDay + delta;
+  if (newDay < 1 || newDay > 35) return;
+  if (journalDirty) saveJournalEntry();
+  currentDay = newDay;
+  checkState = {};
+  document.getElementById('journal-textarea').value = '';
+  loadDayCheckState(newDay).then(function() { renderDay(newDay); });
+}
+
+function showNoProgramState() {
+  document.getElementById('program-content').innerHTML =
+    '<div style="text-align:center;padding:40px 20px;">' +
+    '<div style="font-size:2rem;margin-bottom:12px;">🌱</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--cream);margin-bottom:8px;">No program generated yet</div>' +
+    '<div style="font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">Complete your Goals & Focus setup on the dashboard, then click "Build My Program" to generate your personalized 35-day protocol.</div>' +
+    '<a href="/dashboard.html" style="display:inline-block;padding:11px 24px;' +
+    'background:linear-gradient(135deg,var(--leaf),var(--bloom));color:var(--cream);' +
+    'text-decoration:none;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;">Go to Dashboard →</a>' +
+    '</div>';
+}
+
+// ── RENDER DAY ──
+function renderDay(day) {
+  dayData = (programJson.days || []).find(function(d){ return d.day === day; });
+  if (!dayData) return;
+
+  // Header
+  document.getElementById('day-number-display').textContent = day;
+  document.getElementById('day-phase-display').textContent =
+    'Phase ' + dayData.phase + ' — ' + (dayData.phase_name || '');
+  var pct = Math.round((day / 35) * 100);
+  document.getElementById('day-progress-fill').style.width = pct + '%';
+  document.getElementById('day-pct-label').textContent = pct + '%';
+
+  // Nav buttons
+  document.getElementById('prev-day-btn').disabled = day <= 1;
+  document.getElementById('next-day-btn').disabled = day >= 35;
+
+  // ZenZo daily card
+  if (dayData.zenzo_daily_quote) {
+    document.getElementById('zenzo-daily-quote').textContent = '"' + dayData.zenzo_daily_quote + '"';
+  }
+  if (dayData.zenzo_intention_check) {
+    document.getElementById('zenzo-daily-intention').textContent = dayData.zenzo_intention_check;
+  }
+  if (dayData.journal_prompt) {
+    document.getElementById('journal-prompt-text').textContent = dayData.journal_prompt;
+  }
+
+  // Reset task counts
+  totalTasksToday = 0;
+  doneTasksToday = 0;
+
+  // Render modules
+  renderMorningRitual(dayData.morning_ritual || []);
+  renderMeals(dayData);
+  renderMovement(dayData.movement);
+  renderSupplements(dayData.supplements || []);
+  renderSkincare(dayData);
+  renderOralCare(dayData.oral_care || []);
+  renderEveningRitual(dayData.evening_ritual || []);
+  updateBottomBar();
+}
+
+// ── MORNING RITUAL ──
+function renderMorningRitual(steps) {
+  var html = '';
+  steps.forEach(function(step, i) {
+    var key = 'morning-' + i;
+    var done = !!checkState[key];
+    totalTasksToday++;
+    if (done) doneTasksToday++;
+    html += '<div class="step-item' + (done ? ' done' : '') + '" onclick="toggleStep(this,\'' + key + '\')">';
+    html += '<div class="step-dot">' + (done ? '✓' : '') + '</div>';
+    html += '<div style="flex:1;">';
+    html += '<div class="step-text">' + step.step + '</div>';
+    if (step.note) html += '<div class="step-note">' + step.note + '</div>';
+    html += '</div>';
+    if (step.duration) html += '<div class="step-duration">' + step.duration + '</div>';
+    html += '</div>';
+  });
+  document.getElementById('morning-ritual-container').innerHTML = html;
+}
+
+// ── MEALS ──
+function renderMeals(day) {
+  var meals = [
+    {key:'meal_breakfast', type:'Breakfast', icon:'🌅'},
+    {key:'meal_lunch', type:'Lunch', icon:'☀️'},
+    {key:'meal_snack', type:'Snack', icon:'🍃'},
+    {key:'meal_dinner', type:'Dinner', icon:'🌙'}
+  ];
+  var html = '';
+  meals.forEach(function(m) {
+    var meal = day[m.key];
+    if (!meal || !meal.name) return;
+    var mealKey = 'meal-' + m.key;
+    var ratingKey = 'rating-' + m.key;
+    var rating = checkState[ratingKey] || 0;
+    var doneKey = 'eaten-' + m.key;
+    var eaten = !!checkState[doneKey];
+    totalTasksToday++;
+    if (eaten) doneTasksToday++;
+
+    var doshaClass = (meal.dosha_alignment || '').toLowerCase();
+    if (!['pitta','kapha','vata'].includes(doshaClass)) doshaClass = 'tridoshic';
+
+    html += '<div class="meal-card' + (eaten ? ' completed' : '') + '" id="mc-' + m.key + '">';
+    html += '<div class="meal-header" onclick="toggleMealBody(\'' + m.key + '\')">';
+    html += '<span style="font-size:1.1rem;">' + m.icon + '</span>';
+    html += '<span class="meal-type-badge">' + m.type + '</span>';
+    html += '<span class="meal-name">' + meal.name + '</span>';
+    html += '<span class="meal-dosha-badge ' + doshaClass + '">' + meal.dosha_alignment + '</span>';
+    html += '</div>';
+    html += '<div class="meal-body" id="meal-body-' + m.key + '">';
+    html += '<div class="meal-meta-row">';
+    if (meal.prep_time) html += '<div class="meal-meta-item"><strong>Prep:</strong> ' + meal.prep_time + '</div>';
+    if (meal.nutrition_focus) html += '<div class="meal-meta-item"><strong>Focus:</strong> ' + meal.nutrition_focus + '</div>';
+    html += '</div>';
+    if (meal.ingredients && meal.ingredients.length) {
+      html += '<div class="ingredient-list">';
+      meal.ingredients.forEach(function(ing) {
+        html += '<span class="ingredient-tag">' + ing + '</span>';
+      });
+      html += '</div>';
+    }
+    if (meal.note) html += '<div class="module-note">' + meal.note + '</div>';
+    html += '<div class="meal-actions">';
+    html += '<div>';
+    html += '<div style="font-size:.58rem;color:var(--muted);letter-spacing:.08em;margin-bottom:5px;">Rate this meal:</div>';
+    html += renderStars(ratingKey, rating);
+    html += '</div>';
+    html += '<div style="display:flex;gap:8px;">';
+    html += '<button class="swap-btn" onclick="openZenZoPanel(\'swap-meal\',\'' + m.key + '\')">⟳ Swap</button>';
+    html += '<button class="swap-btn" onclick="markEaten(\'' + m.key + '\')" style="' + (eaten ? 'border-color:var(--bloom);color:var(--bloom);' : '') + '">' + (eaten ? '✓ Eaten' : 'Mark Eaten') + '</button>';
+    html += '</div></div></div></div>';
+  });
+  document.getElementById('meals-container').innerHTML = html;
+}
+
+function toggleMealBody(mealKey) {
+  var body = document.getElementById('meal-body-' + mealKey);
+  if (body) {
+    body.classList.toggle('open');
+  }
+}
+
+function markEaten(mealKey) {
+  var key = 'eaten-' + mealKey;
+  checkState[key] = !checkState[key];
+  if (checkState[key]) awardXP(15);
+  renderMeals(dayData);
+  updateBottomBar();
+  saveCheckState();
+}
+
+// ── STAR RATING ──
+function renderStars(ratingKey, currentRating) {
+  var html = '<div class="star-rating" id="stars-' + ratingKey + '">';
+  for (var i = 1; i <= 5; i++) {
+    html += '<span class="star' + (i <= currentRating ? ' lit' : '') + '" ' +
+      'onclick="setRating(\'' + ratingKey + '\',' + i + ')" ' +
+      'onmouseover="hoverStars(\'' + ratingKey + '\',' + i + ')" ' +
+      'onmouseout="resetStarHover(\'' + ratingKey + '\',this.parentElement)">★</span>';
+  }
+  if (currentRating > 0) html += '<span class="rated-label">Rated ' + currentRating + '/5</span>';
+  html += '</div>';
+  return html;
+}
+
+function setRating(ratingKey, val) {
+  checkState[ratingKey] = val;
+  // Update star display
+  var container = document.getElementById('stars-' + ratingKey);
+  if (container) {
+    var stars = container.querySelectorAll('.star');
+    stars.forEach(function(s, i) {
+      s.classList.toggle('lit', i < val);
+    });
+    var label = container.querySelector('.rated-label');
+    if (!label) {
+      label = document.createElement('span');
+      label.className = 'rated-label';
+      container.appendChild(label);
+    }
+    label.textContent = 'Rated ' + val + '/5';
+  }
+  // Save to meal_ratings or workout_ratings table
+  if (ratingKey.startsWith('rating-meal_')) {
+    saveMealRating(ratingKey, val);
+  } else if (ratingKey === 'rating-workout') {
+    saveWorkoutRating(val);
+  }
+  awardXP(5);
+  saveCheckState();
+}
+
+function hoverStars(ratingKey, val) {
+  var container = document.getElementById('stars-' + ratingKey);
+  if (!container) return;
+  container.querySelectorAll('.star').forEach(function(s, i) {
+    s.style.color = i < val ? 'var(--pollen)' : 'rgba(237,184,48,.2)';
+  });
+}
+
+function resetStarHover(ratingKey, container) {
+  if (!container) return;
+  var current = checkState[ratingKey] || 0;
+  container.querySelectorAll('.star').forEach(function(s, i) {
+    s.style.color = '';
+    s.classList.toggle('lit', i < current);
+  });
+}
+
+async function saveMealRating(ratingKey, rating) {
+  var mealType = ratingKey.replace('rating-meal_', '');
+  var meal = dayData ? dayData['meal_' + mealType] : null;
+  if (!meal) return;
+  try {
+    await supa.from('meal_ratings').insert({
+      user_id: currentUser.id,
+      program_day: currentDay,
+      meal_category: mealType,
+      meal_name: meal.name,
+      rating: rating,
+      was_swapped: false
+    });
+    // Track favorite
+    await updateFavoriteDirectory('meal_' + mealType, meal.name, {meal: meal}, rating);
+  } catch(e) {}
+}
+
+async function saveWorkoutRating(rating) {
+  if (!dayData || !dayData.movement) return;
+  try {
+    await supa.from('workout_ratings').insert({
+      user_id: currentUser.id,
+      program_day: currentDay,
+      workout_name: dayData.movement.name,
+      muscle_group: dayData.movement.focus || '',
+      rating: rating,
+      was_modified: !!checkState['workout-modified']
+    });
+    await updateFavoriteDirectory('workout', dayData.movement.name, {workout: dayData.movement}, rating);
+  } catch(e) {}
+}
+
+async function updateFavoriteDirectory(category, name, data, rating) {
+  try {
+    var existing = await supa.from('favorite_directory')
+      .select('*').eq('user_id', currentUser.id)
+      .eq('category', category).eq('item_name', name).single();
+    if (existing.data) {
+      var newAvg = ((existing.data.average_rating * existing.data.times_selected) + rating) /
+                   (existing.data.times_selected + 1);
+      await supa.from('favorite_directory').update({
+        average_rating: Math.round(newAvg * 10) / 10,
+        times_selected: existing.data.times_selected + 1,
+        last_selected: new Date().toISOString().split('T')[0]
+      }).eq('id', existing.data.id);
+    } else {
+      await supa.from('favorite_directory').insert({
+        user_id: currentUser.id,
+        category: category,
+        item_name: name,
+        item_json: data,
+        average_rating: rating,
+        times_selected: 1,
+        last_selected: new Date().toISOString().split('T')[0]
+      });
+    }
+  } catch(e) {}
+}
+
+// ── MOVEMENT ──
+function renderMovement(movement) {
+  if (!movement) {
+    document.getElementById('movement-container').innerHTML = '<div style="padding:12px;font-size:.72rem;color:var(--muted);">Rest day — no movement planned.</div>';
+    return;
+  }
+  var ratingKey = 'rating-workout';
+  var rating = checkState[ratingKey] || 0;
+  totalTasksToday++;
+  var allDone = (movement.exercises || []).every(function(_, i) {
+    return !!checkState['ex-' + i];
+  });
+  if (allDone && movement.exercises && movement.exercises.length) doneTasksToday++;
+
+  var html = '<div class="workout-card' + (allDone ? ' completed' : '') + '">';
+  html += '<div class="workout-header" onclick="toggleWorkoutBody()">';
+  html += '<span class="workout-type-badge">' + (movement.type || 'movement') + '</span>';
+  html += '<span class="workout-name">' + movement.name + '</span>';
+  html += '<span style="font-size:.62rem;color:var(--muted);">' + (movement.duration || '') + '</span>';
+  html += '</div>';
+  html += '<div class="workout-body" id="workout-body">';
+
+  var metas = [];
+  if (movement.intensity) metas.push('<strong>Intensity:</strong> ' + movement.intensity);
+  if (movement.focus) metas.push('<strong>Focus:</strong> ' + movement.focus);
+  if (metas.length) html += '<div class="meal-meta-row">' + metas.map(function(m){ return '<div class="meal-meta-item">' + m + '</div>'; }).join('') + '</div>';
+  if (movement.note) html += '<div class="module-note">' + movement.note + '</div>';
+
+  html += '<div class="exercise-list">';
+  (movement.exercises || []).forEach(function(ex, i) {
+    var key = 'ex-' + i;
+    var done = !!checkState[key];
+    html += '<div class="exercise-item' + (done ? ' done' : '') + '" onclick="toggleExercise(this,\'' + key + '\')">';
+    html += '<div class="exercise-dot">' + (done ? '✓' : '') + '</div>';
+    html += '<div class="exercise-name">' + ex + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="meal-actions">';
+  html += '<div><div style="font-size:.58rem;color:var(--muted);letter-spacing:.08em;margin-bottom:5px;">Rate this workout:</div>';
+  html += renderStars(ratingKey, rating);
+  html += '</div>';
+  html += '<button class="modify-btn" onclick="openZenZoPanel(\'modify-workout\')">✎ Modify</button>';
+  html += '</div></div></div>';
+
+  document.getElementById('movement-container').innerHTML = html;
+}
+
+function toggleWorkoutBody() {
+  var body = document.getElementById('workout-body');
+  if (body) body.classList.toggle('open');
+}
+
+function toggleExercise(el, key) {
+  checkState[key] = !checkState[key];
+  el.classList.toggle('done', checkState[key]);
+  var dot = el.querySelector('.exercise-dot');
+  if (dot) dot.textContent = checkState[key] ? '✓' : '';
+  if (checkState[key]) awardXP(5);
+  // Check if all exercises done
+  var allDone = Object.keys(checkState).filter(function(k){ return k.startsWith('ex-'); })
+    .every(function(k){ return checkState[k]; });
+  if (allDone) {
+    var card = el.closest('.workout-card');
+    if (card) card.classList.add('completed');
+    awardXP(15);
+  }
+  updateBottomBar();
+  saveCheckState();
+}
+
+// ── SUPPLEMENTS ──
+function renderSupplements(supplements) {
+  if (!supplements.length) {
+    document.getElementById('supplements-container').innerHTML = '';
+    return;
+  }
+  var html = '<div class="module-card"><div class="module-body open" style="padding:14px;">';
+  supplements.forEach(function(s, i) {
+    var key = 'supp-' + i;
+    var done = !!checkState[key];
+    totalTasksToday++;
+    if (done) doneTasksToday++;
+    var stock = supplementStock[s.name] || null;
+    var stockCount = stock ? stock.current_stock : null;
+    var isLow = stockCount !== null && stockCount <= (stock.low_stock_threshold || 7);
+
+    html += '<div class="supp-item' + (done ? ' done' : '') + '" onclick="toggleSupp(this,\'' + key + '\',\'' + s.name + '\')">';
+    html += '<div class="supp-dot">' + (done ? '✓' : '') + '</div>';
+    html += '<div class="supp-info">';
+    html += '<div class="supp-name">' + s.name + '</div>';
+    html += '<div class="supp-meta">' + (s.dose || '') + (s.timing ? ' · ' + s.timing : '') + '</div>';
+    if (s.note) html += '<div class="supp-meta">' + s.note + '</div>';
+    html += '</div>';
+    if (stockCount !== null) {
+      html += '<div class="supp-stock' + (isLow ? ' low' : '') + '">' +
+        stockCount + ' left' + (isLow ? ' ⚠️' : '') + '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div></div>';
+  document.getElementById('supplements-container').innerHTML = html;
+}
+
+function toggleSupp(el, key, name) {
+  checkState[key] = !checkState[key];
+  el.classList.toggle('done', checkState[key]);
+  var dot = el.querySelector('.supp-dot');
+  if (dot) dot.textContent = checkState[key] ? '✓' : '';
+  if (checkState[key]) {
+    awardXP(10);
+    // Decrement stock
+    decrementStock(name);
+  }
+  updateBottomBar();
+  saveCheckState();
+}
+
+async function decrementStock(name) {
+  var stock = supplementStock[name];
+  if (!stock) return;
+  var newCount = Math.max(0, (stock.current_stock || 0) - 1);
+  stock.current_stock = newCount;
+  try {
+    await supa.from('supplement_inventory').update({current_stock: newCount})
+      .eq('user_id', currentUser.id).eq('supplement_name', name);
+  } catch(e) {}
+}
+
+// ── SKINCARE ──
+function renderSkincare(day) {
+  var html = '';
+  var protocols = [];
+  if (day.skincare_am && day.skincare_am.length) protocols.push({label:'AM', steps:day.skincare_am});
+  if (day.skincare_pm && day.skincare_pm.length) protocols.push({label:'PM', steps:day.skincare_pm});
+  if (day.haircare) protocols.push({label:'Hair', steps: Array.isArray(day.haircare) ? day.haircare : [day.haircare]});
+
+  protocols.forEach(function(proto) {
+    html += '<div style="margin-bottom:10px;">';
+    html += '<div style="font-size:.58rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;">' + proto.label + '</div>';
+    proto.steps.forEach(function(step, i) {
+      var key = 'skin-' + proto.label + '-' + i;
+      var done = !!checkState[key];
+      totalTasksToday++;
+      if (done) doneTasksToday++;
+      html += '<div class="protocol-step' + (done ? ' done' : '') + '" onclick="toggleProtocol(this,\'' + key + '\')">';
+      html += '<div class="protocol-num">' + (done ? '✓' : (i+1)) + '</div>';
+      html += '<div style="flex:1;">';
+      html += '<div class="protocol-text">' + (step.step || step.name || step) + '</div>';
+      if (step.note) html += '<div class="protocol-note">' + step.note + '</div>';
+      html += '</div>';
+      if (step.product_type) html += '<div style="font-size:.58rem;color:var(--muted);white-space:nowrap;">' + step.product_type + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('skincare-container').innerHTML = html;
+}
+
+// ── ORAL CARE ──
+function renderOralCare(steps) {
+  var label = document.getElementById('oral-section-label');
+  if (!steps.length) {
+    if (label) label.style.display = 'none';
+    document.getElementById('oral-container').innerHTML = '';
+    return;
+  }
+  if (label) label.style.display = 'flex';
+  var html = '';
+  steps.forEach(function(step, i) {
+    var key = 'oral-' + i;
+    var done = !!checkState[key];
+    totalTasksToday++;
+    if (done) doneTasksToday++;
+    html += '<div class="protocol-step' + (done ? ' done' : '') + '" onclick="toggleProtocol(this,\'' + key + '\')">';
+    html += '<div class="protocol-num">' + (done ? '✓' : (i+1)) + '</div>';
+    html += '<div style="flex:1;">';
+    html += '<div class="protocol-text">' + step.step + (step.duration ? ' — ' + step.duration : '') + '</div>';
+    if (step.note) html += '<div class="protocol-note">' + step.note + '</div>';
+    html += '</div></div>';
+  });
+  document.getElementById('oral-container').innerHTML = html;
+}
+
+// ── EVENING RITUAL ──
+function renderEveningRitual(steps) {
+  var html = '';
+  steps.forEach(function(step, i) {
+    var key = 'eve-' + i;
+    var done = !!checkState[key];
+    totalTasksToday++;
+    if (done) doneTasksToday++;
+    html += '<div class="step-item' + (done ? ' done' : '') + '" onclick="toggleStep(this,\'' + key + '\')">';
+    html += '<div class="step-dot">' + (done ? '✓' : '') + '</div>';
+    html += '<div style="flex:1;">';
+    html += '<div class="step-text">' + step.step + '</div>';
+    if (step.note) html += '<div class="step-note">' + step.note + '</div>';
+    html += '</div>';
+    if (step.duration) html += '<div class="step-duration">' + step.duration + '</div>';
+    html += '</div>';
+  });
+  document.getElementById('evening-container').innerHTML = html;
+}
+
+// ── GENERIC TOGGLE ──
+function toggleStep(el, key) {
+  checkState[key] = !checkState[key];
+  el.classList.toggle('done', checkState[key]);
+  var dot = el.querySelector('.step-dot');
+  if (dot) dot.textContent = checkState[key] ? '✓' : '';
+  if (checkState[key]) awardXP(10);
+  updateBottomBar();
+  saveCheckState();
+}
+
+function toggleProtocol(el, key) {
+  checkState[key] = !checkState[key];
+  el.classList.toggle('done', checkState[key]);
+  var num = el.querySelector('.protocol-num');
+  if (num) num.textContent = checkState[key] ? '✓' : (parseInt(key.split('-').pop()) + 1);
+  if (checkState[key]) awardXP(10);
+  updateBottomBar();
+  saveCheckState();
+}
+
+// ── BOTTOM BAR ──
+function updateBottomBar() {
+  // Recount from checkState
+  var done = 0, total = totalTasksToday;
+  // Count all checked non-rating keys
+  Object.entries(checkState).forEach(function(entry) {
+    var k = entry[0], v = entry[1];
+    if (!k.startsWith('rating-') && v === true) done++;
+  });
+  doneTasksToday = done;
+  document.getElementById('tasks-done-count').textContent = done;
+  document.getElementById('tasks-total-count').textContent = total;
+  var pct = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('tasks-pct').textContent = pct + '%';
+
+  // Check day complete
+  if (total > 0 && done >= total) {
+    var banner = document.getElementById('day-complete-banner');
+    if (banner && !banner.classList.contains('show')) {
+      banner.classList.add('show');
+      document.getElementById('dcb-title').textContent = 'Day ' + currentDay + ' complete ✦';
+      document.getElementById('dcb-sub').textContent =
+        'You completed all ' + total + ' tasks. ' +
+        (currentDay < 35 ? 'Day ' + (currentDay+1) + ' unlocks tomorrow.' : 'You have completed the full 35-day program. Your OJAS practice awaits.');
+      awardXP(50);
+    }
+  }
+}
+
+// ── XP ──
+async function awardXP(amount) {
+  var toast = document.getElementById('xp-toast');
+  toast.textContent = '+' + amount + ' XP';
+  toast.classList.add('show');
+  setTimeout(function(){ toast.classList.remove('show'); }, 2000);
+
+  if (!currentUser) return;
+  try {
+    var profile = await supa.from('profiles').select('xp,streak_days,last_active_date').eq('id',currentUser.id).single();
+    if (!profile.data) return;
+    var today = new Date().toISOString().split('T')[0];
+    var xp = (profile.data.xp || 0) + amount;
+    var streak = profile.data.streak_days || 0;
+    var last = profile.data.last_active_date;
+    var yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+    if (last === today) {} // same day, no change
+    else if (last === yesterday) streak++;
+    else streak = 1;
+
+    await supa.from('profiles').update({
+      xp: xp, streak_days: streak, last_active_date: today
+    }).eq('id', currentUser.id);
+
+    document.getElementById('xp-display').textContent = xp + ' XP';
+    document.getElementById('streak-display').textContent = '🔥 ' + streak + 'd';
+  } catch(e) {}
+}
+
+// ── SAVE CHECK STATE ──
+var saveTimer = null;
+function saveCheckState() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flushCheckState, 2500);
+}
+
+async function flushCheckState() {
+  if (!currentUser) return;
+  try {
+    await supa.from('daily_progress').upsert({
+      user_id: currentUser.id,
+      program_day: currentDay,
+      phase: dayData ? dayData.phase : 1,
+      checkboxes: checkState,
+      updated_at: new Date().toISOString()
+    }, {onConflict: 'user_id,program_day'});
+
+    // Advance current_day if this day is fully complete
+    if (currentDay === (userProfile.current_day || 1)) {
+      var total = totalTasksToday;
+      var done = Object.values(checkState).filter(function(v){ return v === true; }).length;
+      if (total > 0 && done >= total) {
+        var nextDay = Math.min(35, currentDay + 1);
+        await supa.from('profiles').update({current_day: nextDay}).eq('id', currentUser.id);
+        if (userProfile) userProfile.current_day = nextDay;
+      }
+    }
+  } catch(e) {}
+}
+
+// ── JOURNAL ──
+function markJournalDirty() { journalDirty = true; }
+
+async function saveJournalEntry() {
+  var text = document.getElementById('journal-textarea').value.trim();
+  if (!text) return;
+  journalDirty = false;
+  try {
+    var existing = await supa.from('daily_progress')
+      .select('journal_entries').eq('user_id', currentUser.id)
+      .eq('program_day', currentDay).single();
+    var entries = (existing.data && existing.data.journal_entries) || {};
+    entries[currentDay] = text;
+    await supa.from('daily_progress').upsert({
+      user_id: currentUser.id,
+      program_day: currentDay,
+      journal_entries: entries,
+      updated_at: new Date().toISOString()
+    }, {onConflict: 'user_id,program_day'});
+
+    var msg = document.getElementById('journal-saved-msg');
+    if (msg) {
+      msg.style.display = 'block';
+      setTimeout(function(){ msg.style.display = 'none'; }, 2000);
+    }
+    awardXP(25);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// ZENZO SWAP / MODIFY PANEL
+// ══════════════════════════════════════════════════════════════
+var zpsPanelMode = 'general';
+var zpsMealKey = null;
+var zpsConversation = [];
+var ZENZO_SYSTEM = 'You are ZenZo, an Ayurvedic wellness companion. Be concise and practical. ' +
+  'For meal swaps: ask about dietary restrictions, available ingredients, appetite, and flavor preference, ' +
+  'then suggest 2-3 alternatives with ingredients. ' +
+  'For workout modifications: ask about energy, time, equipment, and injuries, then give a modified workout. ' +
+  'Keep responses under 150 words. No medical advice. Grounded, friendly, direct.';
+
+function openZenZoPanel(mode, mealKey) {
+  zpsPanelMode = mode;
+  zpsMealKey = mealKey || null;
+  zpsConversation = [];
+  document.getElementById('zps-messages').innerHTML = '';
+  document.getElementById('zps-input').value = '';
+
+  var titles = {
+    'general': '✦ ZenZo — Your Companion',
+    'swap-meal': '✦ ZenZo — Swap This Meal',
+    'modify-workout': '✦ ZenZo — Modify Today\'s Workout'
+  };
+  document.getElementById('zps-title').textContent = titles[mode] || '✦ ZenZo';
+
+  var openers = {
+    'swap-meal': 'I can help you find an alternative meal. Do you have any dietary restrictions or allergies I should know about, and what ingredients do you have available?',
+    'modify-workout': 'Let\'s adapt today\'s workout. How is your energy on a scale of 1-10, and how much time do you have?',
+    'general': 'What would you like to explore or adjust today?'
+  };
+  addZPSMessage('zenzo', openers[mode] || openers.general);
+  zpsConversation.push({role:'assistant', content: openers[mode] || openers.general});
+
+  document.getElementById('zenzo-panel-overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('zps-input').focus(); }, 300);
+}
+
+function closeZenZoPanel(e) {
+  if (e.target === document.getElementById('zenzo-panel-overlay')) closeZenZoPanelDirect();
+}
+function closeZenZoPanelDirect() {
+  document.getElementById('zenzo-panel-overlay').classList.remove('open');
+}
+
+function addZPSMessage(from, text) {
+  var msgs = document.getElementById('zps-messages');
+  var div = document.createElement('div');
+  if (from === 'zenzo') {
+    div.style.cssText = 'display:flex;gap:8px;align-items:flex-start;';
+    div.innerHTML = '<div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;' +
+      'background:radial-gradient(circle at 35% 35%,rgba(237,184,48,.35),rgba(232,146,26,.15));' +
+      'display:flex;align-items:center;justify-content:center;font-size:.65rem;">✦</div>' +
+      '<div style="background:rgba(237,184,48,.06);border:1px solid rgba(237,184,48,.1);' +
+      'padding:9px 12px;font-size:.72rem;color:var(--cream);line-height:1.7;flex:1;">' + text + '</div>';
+  } else {
+    div.style.cssText = 'display:flex;justify-content:flex-end;';
+    div.innerHTML = '<div style="background:rgba(61,155,106,.1);border:1px solid rgba(75,191,133,.12);' +
+      'padding:9px 12px;font-size:.72rem;color:var(--cream);line-height:1.7;max-width:82%;">' + text + '</div>';
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendZPSMessage() {
+  var input = document.getElementById('zps-input');
+  var text = input.value.trim();
+  if (!text) return;
+  addZPSMessage('user', text);
+  input.value = '';
+  zpsConversation.push({role:'user', content: text});
+
+  // Build context for ZenZo
+  var context = ZENZO_SYSTEM;
+  if (dayData) {
+    if (zpsPanelMode === 'swap-meal' && zpsMealKey && dayData[zpsMealKey]) {
+      var meal = dayData[zpsMealKey];
+      context += ' Current meal being swapped: ' + meal.name + ' (ingredients: ' + (meal.ingredients||[]).join(', ') + ').';
+    }
+    if (zpsPanelMode === 'modify-workout' && dayData.movement) {
+      context += ' Current workout: ' + dayData.movement.name + ' (' + dayData.movement.duration + ', ' + dayData.movement.intensity + ' intensity).';
+    }
+    if (userProfile) {
+      context += ' User constitution: ' + (userProfile.dosha_primary||'') + '-dominant.';
+    }
+  }
+
+  // Show thinking
+  var msgs = document.getElementById('zps-messages');
+  var thinking = document.createElement('div');
+  thinking.id = 'zps-thinking';
+  thinking.style.cssText = 'font-size:.68rem;color:var(--muted);font-style:italic;padding:6px 0;';
+  thinking.textContent = 'ZenZo is thinking...';
+  msgs.appendChild(thinking);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    var response = await fetch('/.netlify/functions/zenzo', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        system: context,
+        messages: zpsConversation.slice(0, -1).concat([{role:'user', content: text}])
+      })
+    });
+    var data = await response.json();
+    var t = document.getElementById('zps-thinking');
+    if (t) t.remove();
+
+    var textBlocks = (data.content||[]).filter(function(b){return b.type==='text';});
+    var reply = textBlocks.map(function(b){return b.text;}).join('\n');
+    if (!reply) reply = 'I had trouble with that — try rephrasing.';
+
+    zpsConversation.push({role:'assistant', content: reply});
+    addZPSMessage('zenzo', reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>'));
+
+    // If workout was modified, flag it
+    if (zpsPanelMode === 'modify-workout') {
+      checkState['workout-modified'] = true;
+      saveCheckState();
+    }
+
+  } catch(e) {
+    var t2 = document.getElementById('zps-thinking');
+    if (t2) t2.remove();
+    addZPSMessage('zenzo', 'Connection issue — please try again.');
+  }
+}
+</script>
+
+</body>
+</html>
