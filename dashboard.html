@@ -2679,24 +2679,39 @@ async function buildNextPhase() {
       quiz_clarifiers: currentUserProfile.quiz_clarifiers || {}
     };
 
-    var response = await fetch('/.netlify/functions/generate-phase', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        apiKey: storedApiKey,
-        model: storedModel,
-        brief: brief,
-        phase: nextPhase,
-        weeklyReport: currentWeeklyReport,
-        clarifications: clarificationQA,
-        confirmedDirection: confirmedDirection
-      })
-    });
+    // Generate phase in two halves to stay under Netlify's 10-second timeout
+    if (msgEl) msgEl.textContent = 'Building days 1–4 of Week ' + nextPhase + '...';
 
-    var data = await response.json();
-    if (data.error) {
+    var phasePayload = {
+      apiKey: storedApiKey,
+      model: storedModel,
+      brief: brief,
+      phase: nextPhase,
+      weeklyReport: currentWeeklyReport,
+      clarifications: clarificationQA,
+      confirmedDirection: confirmedDirection
+    };
+
+    var [res1, res2] = await Promise.all([
+      fetch('/.netlify/functions/generate-phase', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(Object.assign({}, phasePayload, {half: 1}))
+      }),
+      // Start half 2 immediately in parallel — both stay under 10s
+      fetch('/.netlify/functions/generate-phase', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(Object.assign({}, phasePayload, {half: 2}))
+      })
+    ]);
+
+    var [d1, d2] = await Promise.all([res1.json(), res2.json()]);
+
+    if (d1.error || d2.error) {
+      var errMsg = d1.error || d2.error;
       if (msgEl) { msgEl.style.borderColor = 'var(--fire)'; msgEl.style.color = '#F09090';
-        msgEl.style.background = 'rgba(224,85,85,.08)'; msgEl.textContent = 'Error: ' + data.error; }
+        msgEl.style.background = 'rgba(224,85,85,.08)'; msgEl.textContent = 'Error: ' + errMsg; }
       if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Try Again'; }
       if (backBtn) backBtn.style.display = 'block';
       return;
@@ -2705,7 +2720,7 @@ async function buildNextPhase() {
     // Merge new phase days into existing program_json
     var existingProgram = currentUserProfile.program_json || {program_meta:{},days:[]};
     var existingDays = existingProgram.days || [];
-    var newDays = data.days || [];
+    var newDays = (d1.days || []).concat(d2.days || []);
 
     // Remove any existing days for this phase (in case of retry)
     var dayStart = (nextPhase - 1) * 7 + 1;
