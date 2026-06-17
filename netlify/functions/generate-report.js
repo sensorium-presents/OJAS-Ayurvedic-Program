@@ -47,7 +47,7 @@ exports.handler = async function(event, context) {
       },
       body: JSON.stringify({
         model: model,
-        max_tokens: 3000,
+        max_tokens: 2000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
